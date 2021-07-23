@@ -241,7 +241,7 @@ func local_request_LedgerService_ListAccountEntries_0(ctx context.Context, marsh
 }
 
 var (
-	filter_LedgerService_GetSyntheticReport_0 = &utilities.DoubleArray{Encoding: map[string]int{"filters": 0, "account_query": 1, "level": 2, "start_time": 3, "end_time": 4}, Base: []int{1, 1, 1, 2, 3, 4, 0, 0, 0, 0}, Check: []int{0, 1, 2, 2, 2, 2, 3, 4, 5, 6}}
+	filter_LedgerService_GetSyntheticReport_0 = &utilities.DoubleArray{Encoding: map[string]int{"filters": 0, "account_query": 1, "level": 2, "start_date": 3, "end_date": 4}, Base: []int{1, 1, 1, 2, 3, 4, 0, 0, 0, 0}, Check: []int{0, 1, 2, 2, 2, 2, 3, 4, 5, 6}}
 )
 
 func request_LedgerService_GetSyntheticReport_0(ctx context.Context, marshaler runtime.Marshaler, client LedgerServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -275,24 +275,24 @@ func request_LedgerService_GetSyntheticReport_0(ctx context.Context, marshaler r
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "filters.level", err)
 	}
 
-	val, ok = pathParams["filters.start_time"]
+	val, ok = pathParams["filters.start_date"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "filters.start_time")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "filters.start_date")
 	}
 
-	err = runtime.PopulateFieldFromPath(&protoReq, "filters.start_time", val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "filters.start_date", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "filters.start_time", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "filters.start_date", err)
 	}
 
-	val, ok = pathParams["filters.end_time"]
+	val, ok = pathParams["filters.end_date"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "filters.end_time")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "filters.end_date")
 	}
 
-	err = runtime.PopulateFieldFromPath(&protoReq, "filters.end_time", val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "filters.end_date", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "filters.end_time", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "filters.end_date", err)
 	}
 
 	if err := req.ParseForm(); err != nil {
@@ -338,24 +338,24 @@ func local_request_LedgerService_GetSyntheticReport_0(ctx context.Context, marsh
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "filters.level", err)
 	}
 
-	val, ok = pathParams["filters.start_time"]
+	val, ok = pathParams["filters.start_date"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "filters.start_time")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "filters.start_date")
 	}
 
-	err = runtime.PopulateFieldFromPath(&protoReq, "filters.start_time", val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "filters.start_date", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "filters.start_time", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "filters.start_date", err)
 	}
 
-	val, ok = pathParams["filters.end_time"]
+	val, ok = pathParams["filters.end_date"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "filters.end_time")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "filters.end_date")
 	}
 
-	err = runtime.PopulateFieldFromPath(&protoReq, "filters.end_time", val)
+	err = runtime.PopulateFieldFromPath(&protoReq, "filters.end_date", val)
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "filters.end_time", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "filters.end_date", err)
 	}
 
 	if err := req.ParseForm(); err != nil {
@@ -492,7 +492,7 @@ func RegisterLedgerServiceHandlerServer(ctx context.Context, mux *runtime.ServeM
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/ledger.LedgerService/GetSyntheticReport", runtime.WithHTTPPathPattern("/api/v1/reports/{filters.account_query}/{filters.level}/{filters.start_time}/{filters.end_time}/synthetic"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/ledger.LedgerService/GetSyntheticReport", runtime.WithHTTPPathPattern("/api/v1/reports/{filters.account_query}/{filters.level}/{filters.start_date}/{filters.end_date}/synthetic"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -666,7 +666,7 @@ func RegisterLedgerServiceHandlerClient(ctx context.Context, mux *runtime.ServeM
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/ledger.LedgerService/GetSyntheticReport", runtime.WithHTTPPathPattern("/api/v1/reports/{filters.account_query}/{filters.level}/{filters.start_time}/{filters.end_time}/synthetic"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/ledger.LedgerService/GetSyntheticReport", runtime.WithHTTPPathPattern("/api/v1/reports/{filters.account_query}/{filters.level}/{filters.start_date}/{filters.end_date}/synthetic"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -694,7 +694,7 @@ var (
 
 	pattern_LedgerService_ListAccountEntries_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"api", "v1", "accounts", "account_path", "history"}, ""))
 
-	pattern_LedgerService_GetSyntheticReport_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"api", "v1", "reports", "filters.account_query", "filters.level", "filters.start_time", "filters.end_time", "synthetic"}, ""))
+	pattern_LedgerService_GetSyntheticReport_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"api", "v1", "reports", "filters.account_query", "filters.level", "filters.start_date", "filters.end_date", "synthetic"}, ""))
 )
 
 var (

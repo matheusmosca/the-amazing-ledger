@@ -33,7 +33,7 @@ service LedgerService {
   };
   rpc GetSyntheticReport(GetSyntheticReportRequest) returns (GetSyntheticReportResponse){
     option (google.api.http) = {
-      get: "/api/v1/reports/{filters.account_query}/{filters.level}/{filters.start_time}/{filters.end_time}/synthetic"
+      get: "/api/v1/reports/{filters.account_query}/{filters.level}/{filters.start_date}/{filters.end_date}/synthetic"
     };
   };
 }
@@ -128,9 +128,9 @@ message ListAccountEntriesRequest {
   // The account path
   string account_path = 1;
   // Start history date
-  google.protobuf.Timestamp start_date = 2;
+  google.protobuf.Time start_date = 2;
   // End history date
-  google.protobuf.Timestamp end_date = 3;
+  google.protobuf.Time end_date = 3;
   // Pagination
   RequestPagination page = 5;
 }
@@ -170,8 +170,8 @@ message GetSyntheticReportRequest {
 message GetSyntheticReportFilters {
   string account_query = 1;
   int32 level = 2;
-  int64 start_time = 3;
-  int64 end_time = 4;
+  google.protobuf.Timestamp start_date = 3;
+  google.protobuf.Timestamp end_date = 4;
 }
 
 // GetSyntheticReport Response

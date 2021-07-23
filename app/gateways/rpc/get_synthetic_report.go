@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"context"
-	"time"
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -25,10 +24,7 @@ func (a *API) GetSyntheticReport(ctx context.Context, request *proto.GetSyntheti
 
 	level := int(request.Filters.Level) // that's ok to convert int32 to int, since int can be int32 or int64 depending on the used system
 
-	startTime := time.Unix(0, request.Filters.StartTime)
-	endTime := time.Unix(0, request.Filters.EndTime)
-
-	syntheticReport, err := a.UseCase.GetSyntheticReport(ctx, query, level, startTime, endTime)
+	syntheticReport, err := a.UseCase.GetSyntheticReport(ctx, query, level, request.Filters.StartDate.AsTime(), request.Filters.EndDate.AsTime())
 	if err != nil {
 		log.WithError(err).Error("can't get synthetic report")
 		return nil, status.Error(codes.Internal, err.Error())

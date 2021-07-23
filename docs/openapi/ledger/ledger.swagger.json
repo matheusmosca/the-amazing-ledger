@@ -143,7 +143,7 @@
         ]
       }
     },
-    "/api/v1/reports/{filters.accountQuery}/{filters.level}/{filters.startTime}/{filters.endTime}/synthetic": {
+    "/api/v1/reports/{filters.accountQuery}/{filters.level}/{filters.startDate}/{filters.endDate}/synthetic": {
       "get": {
         "operationId": "LedgerService_GetSyntheticReport",
         "responses": {
@@ -175,18 +175,18 @@
             "format": "int32"
           },
           {
-            "name": "filters.startTime",
+            "name": "filters.startDate",
             "in": "path",
             "required": true,
             "type": "string",
-            "format": "int64"
+            "format": "date-time"
           },
           {
-            "name": "filters.endTime",
+            "name": "filters.endDate",
             "in": "path",
             "required": true,
             "type": "string",
-            "format": "int64"
+            "format": "date-time"
           }
         ],
         "tags": [
@@ -404,13 +404,13 @@
           "type": "integer",
           "format": "int32"
         },
-        "startTime": {
+        "startDate": {
           "type": "string",
-          "format": "int64"
+          "format": "date-time"
         },
-        "endTime": {
+        "endDate": {
           "type": "string",
-          "format": "int64"
+          "format": "date-time"
         }
       }
     },
