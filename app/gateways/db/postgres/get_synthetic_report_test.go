@@ -56,8 +56,8 @@ func TestLedgerRepository_GetSyntheticReport(t *testing.T) {
 		name        string
 		query       string
 		level       int
-		startTime   time.Time
-		endTime     time.Time
+		startDate   time.Time
+		endDate     time.Time
 		transaction entities.Transaction
 		report      vos.SyntheticReport
 		err         error
@@ -66,8 +66,8 @@ func TestLedgerRepository_GetSyntheticReport(t *testing.T) {
 			name:        "should not get a result because there was no data inserted",
 			query:       accountBaseEmpty + ".*",
 			level:       3,
-			startTime:   time.Now().UTC(),
-			endTime:     time.Now().UTC(),
+			startDate:   time.Now().UTC(),
+			endDate:     time.Now().UTC(),
 			transaction: entities.Transaction{},
 			report:      vos.SyntheticReport{},
 			err:         nil,
@@ -76,8 +76,21 @@ func TestLedgerRepository_GetSyntheticReport(t *testing.T) {
 			name:        "should get a result",
 			query:       accountBase + ".*",
 			level:       3,
-			startTime:   time.Now().UTC(),
-			endTime:     time.Now().UTC().Add(time.Hour * 1),
+			startDate:   time.Now().UTC(),
+			endDate:     time.Now().UTC().Add(time.Hour * 1),
+			transaction: tx,
+			report: vos.SyntheticReport{
+				TotalCredit: 100,
+				TotalDebit:  100,
+			},
+			err: nil,
+		},
+		{
+			name:        "should not get a result, because there are no results for the chosen period",
+			query:       accountBase + ".*",
+			level:       3,
+			startDate:   time.Now().UTC(),
+			endDate:     time.Now().UTC(),
 			transaction: tx,
 			report: vos.SyntheticReport{
 				TotalCredit: 100,
@@ -97,7 +110,7 @@ func TestLedgerRepository_GetSyntheticReport(t *testing.T) {
 				assert.NoError(t, err)
 			}
 
-			got, err := r.GetSyntheticReport(ctx, query, tt.level, tt.startTime, tt.endTime)
+			got, err := r.GetSyntheticReport(ctx, query, tt.level, tt.startDate, tt.endDate)
 			assert.NoError(t, err)
 
 			if tt.transaction.Company != "" {
