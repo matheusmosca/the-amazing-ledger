@@ -29,9 +29,9 @@ func TestAPI_GetSyntheticReport(t *testing.T) {
 
 		request := &proto.GetSyntheticReportRequest{
 			Account:   testdata.GenerateAccount(),
-			Filters:   &proto.GetSyntheticReportFilters{Level: 4},
 			StartDate: timestamppb.Now(),
 			EndDate:   timestamppb.Now(),
+			Filters:   &proto.GetSyntheticReportFilters{Level: 4},
 		}
 
 		syntheticReport, err := api.GetSyntheticReport(context.Background(), request)
@@ -49,9 +49,9 @@ func TestAPI_GetSyntheticReport(t *testing.T) {
 
 		request := &proto.GetSyntheticReportRequest{
 			Account:   testdata.GenerateAccount(),
-			Filters:   &proto.GetSyntheticReportFilters{Level: 4},
 			StartDate: timestamppb.Now(),
 			EndDate:   timestamppb.Now(),
+			Filters:   &proto.GetSyntheticReportFilters{Level: 4},
 		}
 
 		_, err := api.GetSyntheticReport(context.Background(), request)
@@ -82,6 +82,46 @@ func TestAPI_GetSyntheticReport(t *testing.T) {
 		assert.Equal(t, codes.InvalidArgument, respStatus.Code())
 		assert.Equal(t, "start_date must have a value", respStatus.Message())
 		assert.Nil(t, syntheticReport)
+	})
+
+	t.Run("should get synthetic report successfully, zeroed level", func(t *testing.T) {
+		mockedUsecase := &mocks.UseCaseMock{
+			GetSyntheticReportFunc: func(ctx context.Context, account vos.Account, level int, startTime time.Time, endTime time.Time) (*vos.SyntheticReport, error) {
+				return &vos.SyntheticReport{}, nil
+			},
+		}
+		api := NewAPI(logrus.New(), mockedUsecase)
+
+		request := &proto.GetSyntheticReportRequest{
+			Account:   testdata.GenerateAccount(),
+			StartDate: timestamppb.Now(),
+			EndDate:   timestamppb.Now(),
+			Filters:   &proto.GetSyntheticReportFilters{},
+		}
+
+		syntheticReport, err := api.GetSyntheticReport(context.Background(), request)
+		assert.NoError(t, err)
+		assert.NotNil(t, syntheticReport)
+	})
+
+	t.Run("should get synthetic report successfully, nil Filter", func(t *testing.T) {
+		mockedUsecase := &mocks.UseCaseMock{
+			GetSyntheticReportFunc: func(ctx context.Context, account vos.Account, level int, startTime time.Time, endTime time.Time) (*vos.SyntheticReport, error) {
+				return &vos.SyntheticReport{}, nil
+			},
+		}
+		api := NewAPI(logrus.New(), mockedUsecase)
+
+		request := &proto.GetSyntheticReportRequest{
+			Account:   testdata.GenerateAccount(),
+			StartDate: timestamppb.Now(),
+			EndDate:   timestamppb.Now(),
+			Filters:   nil,
+		}
+
+		syntheticReport, err := api.GetSyntheticReport(context.Background(), request)
+		assert.NoError(t, err)
+		assert.NotNil(t, syntheticReport)
 	})
 
 }

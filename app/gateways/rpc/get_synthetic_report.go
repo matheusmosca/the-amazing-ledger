@@ -16,13 +16,16 @@ func (a *API) GetSyntheticReport(ctx context.Context, request *proto.GetSyntheti
 		"handler": "GetSyntheticReport",
 	})
 
-	query, err := vos.NewAccount(request.Account)
+	account, err := vos.NewAccount(request.Account)
 	if err != nil {
 		log.WithError(err).Error("Invalid account query")
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	level := int(request.Filters.Level) // that's ok to convert int32 to int, since int can be int32 or int64 depending on the used system
+	var level int
+	if request.Filters != nil {
+		level = int(request.Filters.Level) // that's ok to convert int32 to int, since int can be int32 or int64 depending on the used system
+	}
 
 	if request.StartDate == nil {
 		return nil, status.Error(codes.InvalidArgument, "start_date must have a value")
@@ -36,7 +39,7 @@ func (a *API) GetSyntheticReport(ctx context.Context, request *proto.GetSyntheti
 		return nil, status.Error(codes.InvalidArgument, "end_date must be valid")
 	}
 
-	syntheticReport, err := a.UseCase.GetSyntheticReport(ctx, query, level, request.StartDate.AsTime(), request.EndDate.AsTime())
+	syntheticReport, err := a.UseCase.GetSyntheticReport(ctx, account, level, request.StartDate.AsTime(), request.EndDate.AsTime())
 	if err != nil {
 		log.WithError(err).Error("can't get synthetic report")
 		return nil, status.Error(codes.Internal, err.Error())
