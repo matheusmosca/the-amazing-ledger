@@ -33,7 +33,7 @@ service LedgerService {
   };
   rpc GetSyntheticReport(GetSyntheticReportRequest) returns (GetSyntheticReportResponse){
     option (google.api.http) = {
-      get: "/api/v1/reports/{filters.account_query}/{filters.level}/{filters.start_time}/{filters.end_time}/synthetic"
+      get: "/api/v1/reports/{account}/{filters.level}/{start_date}/{end_date}/synthetic"
     };
   };
 }
@@ -161,17 +161,23 @@ message AccountEntry {
   google.protobuf.Struct metadata = 7;
 }
 
-// GetSyntheticReport Request
+// Represents a syntethic report request
 message GetSyntheticReportRequest {
-  GetSyntheticReportFilters filters = 1;
+  // The account that's going to be queried.
+  string account = 1;
+  // Start date of the range (timestamp).
+  google.protobuf.Timestamp start_date = 2;
+  // End date of the range (timestamp).
+  google.protobuf.Timestamp end_date = 3;
+  // Optional filters
+  GetSyntheticReportFilters filters = 4;
   // TODO use gRPC pagination
 }
 
+// Filters 
 message GetSyntheticReportFilters {
-  string account_query = 1;
-  int32 level = 2;
-  int64 start_time = 3;
-  int64 end_time = 4;
+  // The level of the account path
+  int32 level = 1;
 }
 
 // GetSyntheticReport Response
@@ -181,11 +187,11 @@ message GetSyntheticReportResponse {
   // All debit accumulated
   int64 total_debit = 3;
   // The paths
-  repeated Path paths = 4;
+  repeated AccountResult results = 4;
 }
 
-message Path {
-  // The account name
+message AccountResult {
+    // The account name
     string account = 1;
     // credit 
     int64 credit = 2;

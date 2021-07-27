@@ -28,11 +28,16 @@ func SetupTest(migrationsPath string) *PostgresDocker {
 
 	database := "dev"
 
-	resource, err := pool.Run(
-		"postgres",
-		"13.2",
-		[]string{"POSTGRES_PASSWORD=postgres", "POSTGRES_DB=" + database},
-	)
+	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
+		Repository: "postgres",
+		Tag:        "13.2",
+		Env: []string{
+			"POSTGRES_PASSWORD=postgres",
+			"POSTGRES_DB=" + database,
+		},
+		// ...so there are no differences in time between host and vm
+		Mounts: []string{"/etc/localtime:/etc/localtime"},
+	})
 	if err != nil {
 		panic(fmt.Errorf("failed to start resource: %w", err))
 	}

@@ -143,7 +143,7 @@
         ]
       }
     },
-    "/api/v1/reports/{filters.accountQuery}/{filters.level}/{filters.startTime}/{filters.endTime}/synthetic": {
+    "/api/v1/reports/{account}/{filters.level}/{startDate}/{endDate}/synthetic": {
       "get": {
         "operationId": "LedgerService_GetSyntheticReport",
         "responses": {
@@ -162,31 +162,35 @@
         },
         "parameters": [
           {
-            "name": "filters.accountQuery",
+            "name": "account",
+            "description": "The account that's going to be queried.",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "filters.level",
+            "description": "The level of the account path",
             "in": "path",
             "required": true,
             "type": "integer",
             "format": "int32"
           },
           {
-            "name": "filters.startTime",
+            "name": "startDate",
+            "description": "Start date of the range (timestamp).",
             "in": "path",
             "required": true,
             "type": "string",
-            "format": "int64"
+            "format": "date-time"
           },
           {
-            "name": "filters.endTime",
+            "name": "endDate",
+            "description": "End date of the range (timestamp).",
             "in": "path",
             "required": true,
             "type": "string",
-            "format": "int64"
+            "format": "date-time"
           }
         ],
         "tags": [
@@ -301,6 +305,25 @@
       },
       "title": "Represents a historical entry for a account"
     },
+    "ledgerAccountResult": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "type": "string",
+          "title": "The account name"
+        },
+        "credit": {
+          "type": "string",
+          "format": "int64",
+          "title": "credit"
+        },
+        "debit": {
+          "type": "string",
+          "format": "int64",
+          "title": "debit"
+        }
+      }
+    },
     "ledgerCreateTransactionRequest": {
       "type": "object",
       "properties": {
@@ -397,22 +420,13 @@
     "ledgerGetSyntheticReportFilters": {
       "type": "object",
       "properties": {
-        "accountQuery": {
-          "type": "string"
-        },
         "level": {
           "type": "integer",
-          "format": "int32"
-        },
-        "startTime": {
-          "type": "string",
-          "format": "int64"
-        },
-        "endTime": {
-          "type": "string",
-          "format": "int64"
+          "format": "int32",
+          "title": "The level of the account path"
         }
-      }
+      },
+      "title": "Filters"
     },
     "ledgerGetSyntheticReportResponse": {
       "type": "object",
@@ -427,10 +441,10 @@
           "format": "int64",
           "title": "All debit accumulated"
         },
-        "paths": {
+        "results": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/ledgerPath"
+            "$ref": "#/definitions/ledgerAccountResult"
           },
           "title": "The paths"
         }
@@ -473,25 +487,6 @@
       ],
       "default": "OPERATION_UNSPECIFIED",
       "description": "Operation has the possible operations to be used in Entry.\n\n - OPERATION_UNSPECIFIED: Don't use. It's just the default value.\n - OPERATION_CREDIT: Credit operation.\n - OPERATION_DEBIT: Debit operation."
-    },
-    "ledgerPath": {
-      "type": "object",
-      "properties": {
-        "account": {
-          "type": "string",
-          "title": "The account name"
-        },
-        "credit": {
-          "type": "string",
-          "format": "int64",
-          "title": "credit"
-        },
-        "debit": {
-          "type": "string",
-          "format": "int64",
-          "title": "debit"
-        }
-      }
     },
     "ledgerQueryAggregatedBalanceResponse": {
       "type": "object",

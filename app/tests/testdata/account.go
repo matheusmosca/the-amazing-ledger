@@ -6,10 +6,10 @@ import (
 	"github.com/google/uuid"
 )
 
-func GenerateAccountQuery() string {
+func GenerateAccount() string {
 	return "liability.clients.available." + strings.ReplaceAll(uuid.New().String(), "-", "_") + ".*"
 }
 
-func GenerateInvalidAccountQuery() string {
+func GenerateInvalidAccount() string {
 	return "liability.clients." + strings.ReplaceAll(uuid.New().String(), "-", "_") + ".*"
 }

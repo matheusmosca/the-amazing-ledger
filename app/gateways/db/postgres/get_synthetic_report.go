@@ -22,28 +22,21 @@ from
 	entry 
 where 
 	account ~ $2
+and 
+	created_at >= $3 and created_at < $4 
+group by 1;
 `
-
-const timeParamsQueryStart = " and created_at >= $3 "
-const timeParamsQueryEnd = " and created_at < $4 "
-
-const groupByQuery = "group by 1;"
 
 func (r *LedgerRepository) GetSyntheticReport(ctx context.Context, query vos.Account, level int, startTime time.Time, endTime time.Time) (*vos.SyntheticReport, error) {
 	const operation = "Repository.GetSyntheticReport"
 
 	sqlQuery, params := buildQueryAndParams(query, level, startTime, endTime)
 
-	paramsPgx := make([]interface{}, len(params))
-	for i, s := range params {
-		paramsPgx[i] = s
-	}
-
 	defer newrelic.NewDatastoreSegment(ctx, collection, operation, sqlQuery).End()
 	rows, errQuery := r.db.Query(
 		ctx,
 		sqlQuery,
-		paramsPgx...,
+		params...,
 	)
 
 	if errQuery != nil {
@@ -55,7 +48,7 @@ func (r *LedgerRepository) GetSyntheticReport(ctx context.Context, query vos.Acc
 
 	defer rows.Close()
 
-	pathsReport := []vos.Path{}
+	results := []vos.AccountResult{}
 	var totalCredit int64
 	var totalDebit int64
 
@@ -79,13 +72,13 @@ func (r *LedgerRepository) GetSyntheticReport(ctx context.Context, query vos.Acc
 			return nil, err
 		}
 
-		path := vos.Path{
+		path := vos.AccountResult{
 			Account: account,
 			Credit:  credit,
 			Debit:   debit,
 		}
 
-		pathsReport = append(pathsReport, path)
+		results = append(results, path)
 
 		totalCredit = totalCredit + credit
 		totalDebit = totalDebit + debit
@@ -96,11 +89,11 @@ func (r *LedgerRepository) GetSyntheticReport(ctx context.Context, query vos.Acc
 		return nil, errNext
 	}
 
-	if pathsReport == nil || len(pathsReport) < 1 {
+	if results == nil || len(results) < 1 {
 		return &vos.SyntheticReport{}, nil
 	}
 
-	syntheticReport, errEntity := vos.NewSyntheticReport(totalCredit, totalDebit, pathsReport)
+	syntheticReport, errEntity := vos.NewSyntheticReport(totalCredit, totalDebit, results)
 	if errEntity != nil {
 		return nil, errEntity
 	}
@@ -108,26 +101,12 @@ func (r *LedgerRepository) GetSyntheticReport(ctx context.Context, query vos.Acc
 	return syntheticReport, nil
 }
 
-func buildQueryAndParams(query vos.Account, level int, startTime time.Time, endTime time.Time) (string, []string) {
+func buildQueryAndParams(query vos.Account, level int, startTime time.Time, endTime time.Time) (string, []interface{}) {
 	sqlQuery := syntheticReportQuery
 	sqlQuery = fmt.Sprintf(sqlQuery, vos.CreditOperation, vos.DebitOperation)
 
-	params := []string{
-		strconv.Itoa(level),
-		query.Value(),
-	}
-
-	if !startTime.IsZero() {
-		params = append(params, startTime.Format(time.RFC3339))
-		sqlQuery += timeParamsQueryStart
-	}
-
-	if !endTime.IsZero() {
-		params = append(params, endTime.Format(time.RFC3339))
-		sqlQuery += timeParamsQueryEnd
-	}
-
-	sqlQuery += groupByQuery
+	params := make([]interface{}, 0)
+	params = append(params, strconv.Itoa(level), query.Value(), startTime.Format(time.RFC3339), endTime.Format(time.RFC3339))
 
 	return sqlQuery, params
 }

@@ -23,7 +23,7 @@ func TestLedgerUseCase_GetSyntheticReport(t *testing.T) {
 		accountPath, err := vos.NewAnalyticalAccount("liability.credit_card.invoice")
 		assert.NoError(t, err)
 
-		paths := []vos.Path{{
+		paths := []vos.AccountResult{{
 			Account: accountPath,
 			Debit:   1000,
 			Credit:  2000,
@@ -47,6 +47,6 @@ func TestLedgerUseCase_GetSyntheticReport(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, fakeSyntheticReport.TotalCredit, got.TotalCredit)
 		assert.Equal(t, fakeSyntheticReport.TotalDebit, got.TotalDebit)
-		assert.Equal(t, len(fakeSyntheticReport.Paths), len(got.Paths))
+		assert.Equal(t, len(fakeSyntheticReport.Results), len(got.Results))
 	})
 }

@@ -29,7 +29,7 @@ var _ domain.Repository = &RepositoryMock{}
 // 			GetAccountBalanceFunc: func(contextMoqParam context.Context, account vos.Account) (vos.AccountBalance, error) {
 // 				panic("mock out the GetAccountBalance method")
 // 			},
-// 			GetSyntheticReportFunc: func(ctx context.Context, query vos.Account, level int, startTime time.Time, endTime time.Time) (*vos.SyntheticReport, error) {
+// 			GetSyntheticReportFunc: func(contextMoqParam context.Context, account vos.Account, n int, timeMoqParam1 time.Time, timeMoqParam2 time.Time) (*vos.SyntheticReport, error) {
 // 				panic("mock out the GetSyntheticReport method")
 // 			},
 // 			ListAccountEntriesFunc: func(contextMoqParam context.Context, accountEntryRequest vos.AccountEntryRequest) ([]vos.AccountEntry, pagination.Cursor, error) {
@@ -52,7 +52,7 @@ type RepositoryMock struct {
 	GetAccountBalanceFunc func(contextMoqParam context.Context, account vos.Account) (vos.AccountBalance, error)
 
 	// GetSyntheticReportFunc mocks the GetSyntheticReport method.
-	GetSyntheticReportFunc func(ctx context.Context, query vos.Account, level int, startTime time.Time, endTime time.Time) (*vos.SyntheticReport, error)
+	GetSyntheticReportFunc func(contextMoqParam context.Context, account vos.Account, n int, timeMoqParam1 time.Time, timeMoqParam2 time.Time) (*vos.SyntheticReport, error)
 
 	// ListAccountEntriesFunc mocks the ListAccountEntries method.
 	ListAccountEntriesFunc func(contextMoqParam context.Context, accountEntryRequest vos.AccountEntryRequest) ([]vos.AccountEntry, pagination.Cursor, error)
@@ -78,16 +78,16 @@ type RepositoryMock struct {
 		}
 		// GetSyntheticReport holds details about calls to the GetSyntheticReport method.
 		GetSyntheticReport []struct {
-			// Ctx is the ctx argument value.
-			Ctx context.Context
-			// Query is the query argument value.
-			Query vos.Account
-			// Level is the level argument value.
-			Level int
-			// StartTime is the startTime argument value.
-			StartTime time.Time
-			// EndTime is the endTime argument value.
-			EndTime time.Time
+			// ContextMoqParam is the contextMoqParam argument value.
+			ContextMoqParam context.Context
+			// Account is the account argument value.
+			Account vos.Account
+			// N is the n argument value.
+			N int
+			// TimeMoqParam1 is the timeMoqParam1 argument value.
+			TimeMoqParam1 time.Time
+			// TimeMoqParam2 is the timeMoqParam2 argument value.
+			TimeMoqParam2 time.Time
 		}
 		// ListAccountEntries holds details about calls to the ListAccountEntries method.
 		ListAccountEntries []struct {
@@ -182,45 +182,45 @@ func (mock *RepositoryMock) GetAccountBalanceCalls() []struct {
 }
 
 // GetSyntheticReport calls GetSyntheticReportFunc.
-func (mock *RepositoryMock) GetSyntheticReport(ctx context.Context, query vos.Account, level int, startTime time.Time, endTime time.Time) (*vos.SyntheticReport, error) {
+func (mock *RepositoryMock) GetSyntheticReport(contextMoqParam context.Context, account vos.Account, n int, timeMoqParam1 time.Time, timeMoqParam2 time.Time) (*vos.SyntheticReport, error) {
 	if mock.GetSyntheticReportFunc == nil {
 		panic("RepositoryMock.GetSyntheticReportFunc: method is nil but Repository.GetSyntheticReport was just called")
 	}
 	callInfo := struct {
-		Ctx       context.Context
-		Query     vos.Account
-		Level     int
-		StartTime time.Time
-		EndTime   time.Time
+		ContextMoqParam context.Context
+		Account         vos.Account
+		N               int
+		TimeMoqParam1   time.Time
+		TimeMoqParam2   time.Time
 	}{
-		Ctx:       ctx,
-		Query:     query,
-		Level:     level,
-		StartTime: startTime,
-		EndTime:   endTime,
+		ContextMoqParam: contextMoqParam,
+		Account:         account,
+		N:               n,
+		TimeMoqParam1:   timeMoqParam1,
+		TimeMoqParam2:   timeMoqParam2,
 	}
 	mock.lockGetSyntheticReport.Lock()
 	mock.calls.GetSyntheticReport = append(mock.calls.GetSyntheticReport, callInfo)
 	mock.lockGetSyntheticReport.Unlock()
-	return mock.GetSyntheticReportFunc(ctx, query, level, startTime, endTime)
+	return mock.GetSyntheticReportFunc(contextMoqParam, account, n, timeMoqParam1, timeMoqParam2)
 }
 
 // GetSyntheticReportCalls gets all the calls that were made to GetSyntheticReport.
 // Check the length with:
 //     len(mockedRepository.GetSyntheticReportCalls())
 func (mock *RepositoryMock) GetSyntheticReportCalls() []struct {
-	Ctx       context.Context
-	Query     vos.Account
-	Level     int
-	StartTime time.Time
-	EndTime   time.Time
+	ContextMoqParam context.Context
+	Account         vos.Account
+	N               int
+	TimeMoqParam1   time.Time
+	TimeMoqParam2   time.Time
 } {
 	var calls []struct {
-		Ctx       context.Context
-		Query     vos.Account
-		Level     int
-		StartTime time.Time
-		EndTime   time.Time
+		ContextMoqParam context.Context
+		Account         vos.Account
+		N               int
+		TimeMoqParam1   time.Time
+		TimeMoqParam2   time.Time
 	}
 	mock.lockGetSyntheticReport.RLock()
 	calls = mock.calls.GetSyntheticReport
