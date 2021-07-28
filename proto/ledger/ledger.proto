@@ -18,12 +18,7 @@ service LedgerService {
   };
   rpc GetAccountBalance(GetAccountBalanceRequest) returns (GetAccountBalanceResponse){
     option (google.api.http) = {
-      get: "/api/v1/accounts/{account_path}/balance"
-    };
-  };
-  rpc QueryAggregatedBalance(QueryAggregatedBalanceRequest) returns (QueryAggregatedBalanceResponse){
-    option (google.api.http) = {
-      get: "/api/v1/aggregated/{query}/balance"
+      get: "/api/v1/accounts/{account}/balance"
     };
   };
   rpc ListAccountEntries(ListAccountEntriesRequest) returns (ListAccountEntriesResponse){
@@ -65,7 +60,7 @@ message Entry  {
   // Operation: debit or credit.
   Operation operation = 4;
   // Amount (in cents).
-  int32 amount = 5;
+  int64 amount = 5;
   // The entry metadata.
   google.protobuf.Struct metadata = 6;
 }
@@ -82,36 +77,22 @@ enum Operation {
 
 // GetAccountBalance Request
 message GetAccountBalanceRequest {
-  // The account name
-  string account_path = 1;
+  // The account name, can be either a synthetic or an analytical one.
+  string account = 1;
 }
 
 // GetAccountBalance Response
 message GetAccountBalanceResponse {
-  // The account name
-  string account_path = 1;
-  // The account version
+  // The account name.
+  string account = 1;
+  // The account version. Only available when requesting an analytical account balance.
   int64 current_version = 2;
-  // All credit accumulated
+  // All account credit accumulated. Only available when requesting an analytical account balance.
   int64 total_credit = 3;
-  // All debit accumulated
+  // All account debit accumulated. Only available when requesting an analytical account balance.
   int64 total_debit = 4;
-  // The Account balance
+  // The account balance.
   int64 balance = 5;
-}
-
-// QueryAggregatedBalance Request
-message QueryAggregatedBalanceRequest {
-  // The account name
-  string query = 1;
-}
-
-// GetAccountBalance Response
-message QueryAggregatedBalanceResponse {
-  // The query path
-  string query = 1;
-  // The query balance
-  int64 balance = 2;
 }
 
 // Request Pagination

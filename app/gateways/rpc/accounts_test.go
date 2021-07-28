@@ -16,13 +16,12 @@ import (
 	proto "github.com/stone-co/the-amazing-ledger/gen/ledger"
 )
 
-func TestAPI_GetAccountBalance_Success(t *testing.T) {
+func TestAPI_GetAccountBalance_Analytical_Success(t *testing.T) {
 	t.Run("should get account balance successfully", func(t *testing.T) {
-		accountBalance := vos.AccountBalance{
-			CurrentVersion: vos.Version(1),
-			TotalCredit:    200,
-			TotalDebit:     100,
-		}
+		account, err := vos.NewAccount(testdata.GenerateAccountPath())
+		assert.NoError(t, err)
+
+		accountBalance := vos.NewAnalyticalAccountBalance(account, vos.Version(1), 200, 100)
 		mockedUsecase := &mocks.UseCaseMock{
 			GetAccountBalanceFunc: func(ctx context.Context, accountPath vos.Account) (vos.AccountBalance, error) {
 				accountBalance.Account = accountPath
@@ -33,16 +32,49 @@ func TestAPI_GetAccountBalance_Success(t *testing.T) {
 		api := NewAPI(logrus.New(), mockedUsecase)
 
 		request := &proto.GetAccountBalanceRequest{
-			AccountPath: testdata.GenerateAccountPath(),
+			Account: account.Value(),
 		}
 
 		got, err := api.GetAccountBalance(context.Background(), request)
 		assert.NoError(t, err)
 
-		assert.Equal(t, int64(accountBalance.TotalDebit), got.TotalDebit)
-		assert.Equal(t, int64(accountBalance.TotalCredit), got.TotalCredit)
-		assert.Equal(t, int64(accountBalance.Balance()), got.Balance)
-		assert.Equal(t, accountBalance.Account.Value(), got.AccountPath)
+		assert.Equal(t, &proto.GetAccountBalanceResponse{
+			Account:        request.Account,
+			CurrentVersion: accountBalance.CurrentVersion.AsInt64(),
+			TotalCredit:    int64(accountBalance.TotalCredit),
+			TotalDebit:     int64(accountBalance.TotalDebit),
+			Balance:        int64(accountBalance.TotalCredit - accountBalance.TotalDebit),
+		}, got)
+	})
+}
+
+func TestAPI_GetAccountBalance_Synthetic_Success(t *testing.T) {
+	t.Run("should get aggregated balance successfully", func(t *testing.T) {
+		account, err := vos.NewAccount("liability.stone.clients.*")
+		assert.NoError(t, err)
+
+		balance := vos.NewSyntheticAccountBalance(account, 100)
+		mockedUsecase := &mocks.UseCaseMock{
+			GetAccountBalanceFunc: func(ctx context.Context, account vos.Account) (vos.AccountBalance, error) {
+				return balance, nil
+			},
+		}
+		api := NewAPI(logrus.New(), mockedUsecase)
+
+		request := &proto.GetAccountBalanceRequest{
+			Account: "liability.stone.clients.*",
+		}
+
+		got, err := api.GetAccountBalance(context.Background(), request)
+		assert.NoError(t, err)
+
+		assert.Equal(t, &proto.GetAccountBalanceResponse{
+			Account:        account.Value(),
+			CurrentVersion: -1,
+			TotalCredit:    0,
+			TotalDebit:     0,
+			Balance:        100,
+		}, got)
 	})
 }
 
@@ -58,10 +90,10 @@ func TestAPI_GetAccountBalance_InvalidRequest(t *testing.T) {
 			name:         "should return an error if account name is invalid",
 			useCaseSetup: &mocks.UseCaseMock{},
 			request: &proto.GetAccountBalanceRequest{
-				AccountPath: "liability.clients.*",
+				Account: "liability.clients.abc-123.*",
 			},
 			expectedCode:    codes.InvalidArgument,
-			expectedMessage: app.ErrInvalidSingleAccountComponentCharacters.Error(),
+			expectedMessage: app.ErrInvalidAccountComponentCharacters.Error(),
 		},
 		{
 			name: "should return an error if account does not exist",
@@ -71,7 +103,7 @@ func TestAPI_GetAccountBalance_InvalidRequest(t *testing.T) {
 				},
 			},
 			request: &proto.GetAccountBalanceRequest{
-				AccountPath: testdata.GenerateAccountPath(),
+				Account: testdata.GenerateAccountPath(),
 			},
 			expectedCode:    codes.NotFound,
 			expectedMessage: "account not found",
@@ -83,78 +115,6 @@ func TestAPI_GetAccountBalance_InvalidRequest(t *testing.T) {
 			api := NewAPI(logrus.New(), tt.useCaseSetup)
 
 			_, err := api.GetAccountBalance(context.Background(), tt.request)
-			respStatus, ok := status.FromError(err)
-
-			assert.True(t, ok)
-			assert.Equal(t, tt.expectedCode, respStatus.Code())
-			assert.Equal(t, tt.expectedMessage, respStatus.Message())
-		})
-	}
-}
-
-func TestAPI_QueryAggregatedBalance_Success(t *testing.T) {
-	t.Run("should get aggregated balance successfully", func(t *testing.T) {
-		accountQuery, err := vos.NewAccount("liability.stone.clients.*")
-		assert.NoError(t, err)
-
-		queryBalance := vos.NewQueryBalance(accountQuery, 100)
-		mockedUsecase := &mocks.UseCaseMock{
-			QueryAggregatedBalanceFunc: func(ctx context.Context, account vos.Account) (vos.QueryBalance, error) {
-				return queryBalance, nil
-			},
-		}
-		api := NewAPI(logrus.New(), mockedUsecase)
-
-		request := &proto.QueryAggregatedBalanceRequest{
-			Query: "liability.stone.clients.*",
-		}
-
-		got, err := api.QueryAggregatedBalance(context.Background(), request)
-		assert.NoError(t, err)
-
-		assert.Equal(t, int64(queryBalance.Balance), got.Balance)
-		assert.Equal(t, queryBalance.Query.Value(), got.Query)
-
-	})
-}
-
-func TestAPI_QueryAggregatedBalance_InvalidRequest(t *testing.T) {
-	testCases := []struct {
-		name            string
-		useCaseSetup    *mocks.UseCaseMock
-		request         *proto.QueryAggregatedBalanceRequest
-		expectedCode    codes.Code
-		expectedMessage string
-	}{
-		{
-			name:         "should return an error if account query is invalid",
-			useCaseSetup: &mocks.UseCaseMock{},
-			request: &proto.QueryAggregatedBalanceRequest{
-				Query: "liability.clients.",
-			},
-			expectedCode:    codes.InvalidArgument,
-			expectedMessage: app.ErrInvalidAccountComponentSize.Error(),
-		},
-		{
-			name: "should return an error if account does not exist",
-			useCaseSetup: &mocks.UseCaseMock{
-				QueryAggregatedBalanceFunc: func(ctx context.Context, account vos.Account) (vos.QueryBalance, error) {
-					return vos.QueryBalance{}, app.ErrAccountNotFound
-				},
-			},
-			request: &proto.QueryAggregatedBalanceRequest{
-				Query: "liability.clients.available",
-			},
-			expectedCode:    codes.NotFound,
-			expectedMessage: "account not found",
-		},
-	}
-
-	for _, tt := range testCases {
-		t.Run(tt.name, func(t *testing.T) {
-			api := NewAPI(logrus.New(), tt.useCaseSetup)
-
-			_, err := api.QueryAggregatedBalance(context.Background(), tt.request)
 			respStatus, ok := status.FromError(err)
 
 			assert.True(t, ok)

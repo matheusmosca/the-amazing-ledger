@@ -21,7 +21,6 @@ const _ = grpc.SupportPackageIsVersion7
 type LedgerServiceClient interface {
 	CreateTransaction(ctx context.Context, in *CreateTransactionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetAccountBalance(ctx context.Context, in *GetAccountBalanceRequest, opts ...grpc.CallOption) (*GetAccountBalanceResponse, error)
-	QueryAggregatedBalance(ctx context.Context, in *QueryAggregatedBalanceRequest, opts ...grpc.CallOption) (*QueryAggregatedBalanceResponse, error)
 	ListAccountEntries(ctx context.Context, in *ListAccountEntriesRequest, opts ...grpc.CallOption) (*ListAccountEntriesResponse, error)
 	GetSyntheticReport(ctx context.Context, in *GetSyntheticReportRequest, opts ...grpc.CallOption) (*GetSyntheticReportResponse, error)
 }
@@ -52,15 +51,6 @@ func (c *ledgerServiceClient) GetAccountBalance(ctx context.Context, in *GetAcco
 	return out, nil
 }
 
-func (c *ledgerServiceClient) QueryAggregatedBalance(ctx context.Context, in *QueryAggregatedBalanceRequest, opts ...grpc.CallOption) (*QueryAggregatedBalanceResponse, error) {
-	out := new(QueryAggregatedBalanceResponse)
-	err := c.cc.Invoke(ctx, "/ledger.LedgerService/QueryAggregatedBalance", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *ledgerServiceClient) ListAccountEntries(ctx context.Context, in *ListAccountEntriesRequest, opts ...grpc.CallOption) (*ListAccountEntriesResponse, error) {
 	out := new(ListAccountEntriesResponse)
 	err := c.cc.Invoke(ctx, "/ledger.LedgerService/ListAccountEntries", in, out, opts...)
@@ -85,7 +75,6 @@ func (c *ledgerServiceClient) GetSyntheticReport(ctx context.Context, in *GetSyn
 type LedgerServiceServer interface {
 	CreateTransaction(context.Context, *CreateTransactionRequest) (*emptypb.Empty, error)
 	GetAccountBalance(context.Context, *GetAccountBalanceRequest) (*GetAccountBalanceResponse, error)
-	QueryAggregatedBalance(context.Context, *QueryAggregatedBalanceRequest) (*QueryAggregatedBalanceResponse, error)
 	ListAccountEntries(context.Context, *ListAccountEntriesRequest) (*ListAccountEntriesResponse, error)
 	GetSyntheticReport(context.Context, *GetSyntheticReportRequest) (*GetSyntheticReportResponse, error)
 }
@@ -99,9 +88,6 @@ func (UnimplementedLedgerServiceServer) CreateTransaction(context.Context, *Crea
 }
 func (UnimplementedLedgerServiceServer) GetAccountBalance(context.Context, *GetAccountBalanceRequest) (*GetAccountBalanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAccountBalance not implemented")
-}
-func (UnimplementedLedgerServiceServer) QueryAggregatedBalance(context.Context, *QueryAggregatedBalanceRequest) (*QueryAggregatedBalanceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method QueryAggregatedBalance not implemented")
 }
 func (UnimplementedLedgerServiceServer) ListAccountEntries(context.Context, *ListAccountEntriesRequest) (*ListAccountEntriesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListAccountEntries not implemented")
@@ -157,24 +143,6 @@ func _LedgerService_GetAccountBalance_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LedgerService_QueryAggregatedBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryAggregatedBalanceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(LedgerServiceServer).QueryAggregatedBalance(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ledger.LedgerService/QueryAggregatedBalance",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LedgerServiceServer).QueryAggregatedBalance(ctx, req.(*QueryAggregatedBalanceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _LedgerService_ListAccountEntries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListAccountEntriesRequest)
 	if err := dec(in); err != nil {
@@ -225,10 +193,6 @@ var LedgerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAccountBalance",
 			Handler:    _LedgerService_GetAccountBalance_Handler,
-		},
-		{
-			MethodName: "QueryAggregatedBalance",
-			Handler:    _LedgerService_QueryAggregatedBalance_Handler,
 		},
 		{
 			MethodName: "ListAccountEntries",

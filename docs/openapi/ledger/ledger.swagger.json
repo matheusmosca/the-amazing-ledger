@@ -19,37 +19,6 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/accounts/{accountPath}/balance": {
-      "get": {
-        "operationId": "LedgerService_GetAccountBalance",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/ledgerGetAccountBalanceResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "accountPath",
-            "description": "The account name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "LedgerService"
-        ]
-      }
-    },
     "/api/v1/accounts/{accountPath}/history": {
       "get": {
         "operationId": "LedgerService_ListAccountEntries",
@@ -112,14 +81,14 @@
         ]
       }
     },
-    "/api/v1/aggregated/{query}/balance": {
+    "/api/v1/accounts/{account}/balance": {
       "get": {
-        "operationId": "LedgerService_QueryAggregatedBalance",
+        "operationId": "LedgerService_GetAccountBalance",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/ledgerQueryAggregatedBalanceResponse"
+              "$ref": "#/definitions/ledgerGetAccountBalanceResponse"
             }
           },
           "default": {
@@ -131,8 +100,8 @@
         },
         "parameters": [
           {
-            "name": "query",
-            "description": "The account name",
+            "name": "account",
+            "description": "The account name, can be either a synthetic or an analytical one.",
             "in": "path",
             "required": true,
             "type": "string"
@@ -376,8 +345,8 @@
           "description": "Operation: debit or credit."
         },
         "amount": {
-          "type": "integer",
-          "format": "int32",
+          "type": "string",
+          "format": "int64",
           "description": "Amount (in cents)."
         },
         "metadata": {
@@ -390,29 +359,29 @@
     "ledgerGetAccountBalanceResponse": {
       "type": "object",
       "properties": {
-        "accountPath": {
+        "account": {
           "type": "string",
-          "title": "The account name"
+          "description": "The account name."
         },
         "currentVersion": {
           "type": "string",
           "format": "int64",
-          "title": "The account version"
+          "description": "The account version. Only available when requesting an analytical account balance."
         },
         "totalCredit": {
           "type": "string",
           "format": "int64",
-          "title": "All credit accumulated"
+          "description": "All account credit accumulated. Only available when requesting an analytical account balance."
         },
         "totalDebit": {
           "type": "string",
           "format": "int64",
-          "title": "All debit accumulated"
+          "description": "All account debit accumulated. Only available when requesting an analytical account balance."
         },
         "balance": {
           "type": "string",
           "format": "int64",
-          "title": "The Account balance"
+          "description": "The account balance."
         }
       },
       "title": "GetAccountBalance Response"
@@ -487,21 +456,6 @@
       ],
       "default": "OPERATION_UNSPECIFIED",
       "description": "Operation has the possible operations to be used in Entry.\n\n - OPERATION_UNSPECIFIED: Don't use. It's just the default value.\n - OPERATION_CREDIT: Credit operation.\n - OPERATION_DEBIT: Debit operation."
-    },
-    "ledgerQueryAggregatedBalanceResponse": {
-      "type": "object",
-      "properties": {
-        "query": {
-          "type": "string",
-          "title": "The query path"
-        },
-        "balance": {
-          "type": "string",
-          "format": "int64",
-          "title": "The query balance"
-        }
-      },
-      "title": "GetAccountBalance Response"
     },
     "ledgerRequestPagination": {
       "type": "object",

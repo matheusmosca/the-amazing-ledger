@@ -35,7 +35,7 @@ var _ domain.Repository = &RepositoryMock{}
 // 			ListAccountEntriesFunc: func(contextMoqParam context.Context, accountEntryRequest vos.AccountEntryRequest) ([]vos.AccountEntry, pagination.Cursor, error) {
 // 				panic("mock out the ListAccountEntries method")
 // 			},
-// 			QueryAggregatedBalanceFunc: func(contextMoqParam context.Context, account vos.Account) (vos.QueryBalance, error) {
+// 			QueryAggregatedBalanceFunc: func(contextMoqParam context.Context, account vos.Account) (vos.AccountBalance, error) {
 // 				panic("mock out the QueryAggregatedBalance method")
 // 			},
 // 		}
@@ -58,7 +58,7 @@ type RepositoryMock struct {
 	ListAccountEntriesFunc func(contextMoqParam context.Context, accountEntryRequest vos.AccountEntryRequest) ([]vos.AccountEntry, pagination.Cursor, error)
 
 	// QueryAggregatedBalanceFunc mocks the QueryAggregatedBalance method.
-	QueryAggregatedBalanceFunc func(contextMoqParam context.Context, account vos.Account) (vos.QueryBalance, error)
+	QueryAggregatedBalanceFunc func(contextMoqParam context.Context, account vos.Account) (vos.AccountBalance, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -264,7 +264,7 @@ func (mock *RepositoryMock) ListAccountEntriesCalls() []struct {
 }
 
 // QueryAggregatedBalance calls QueryAggregatedBalanceFunc.
-func (mock *RepositoryMock) QueryAggregatedBalance(contextMoqParam context.Context, account vos.Account) (vos.QueryBalance, error) {
+func (mock *RepositoryMock) QueryAggregatedBalance(contextMoqParam context.Context, account vos.Account) (vos.AccountBalance, error) {
 	if mock.QueryAggregatedBalanceFunc == nil {
 		panic("RepositoryMock.QueryAggregatedBalanceFunc: method is nil but Repository.QueryAggregatedBalance was just called")
 	}

@@ -18,6 +18,7 @@ const (
 	ErrInvalidSyntheticReportStructure         = DomainError("invalid synthetic report structure")
 	ErrInvalidPageSize                         = DomainError("invalid page size")
 	ErrInvalidPageCursor                       = DomainError("invalid page cursor")
+	ErrInvalidAccountType                      = DomainError("invalid account type")
 )
 
 type DomainError string

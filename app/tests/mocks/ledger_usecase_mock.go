@@ -34,9 +34,6 @@ var _ domain.UseCase = &UseCaseMock{}
 // 			ListAccountEntriesFunc: func(contextMoqParam context.Context, accountEntryRequest vos.AccountEntryRequest) (vos.AccountEntryResponse, error) {
 // 				panic("mock out the ListAccountEntries method")
 // 			},
-// 			QueryAggregatedBalanceFunc: func(contextMoqParam context.Context, account vos.Account) (vos.QueryBalance, error) {
-// 				panic("mock out the QueryAggregatedBalance method")
-// 			},
 // 		}
 //
 // 		// use mockedUseCase in code that requires domain.UseCase
@@ -55,9 +52,6 @@ type UseCaseMock struct {
 
 	// ListAccountEntriesFunc mocks the ListAccountEntries method.
 	ListAccountEntriesFunc func(contextMoqParam context.Context, accountEntryRequest vos.AccountEntryRequest) (vos.AccountEntryResponse, error)
-
-	// QueryAggregatedBalanceFunc mocks the QueryAggregatedBalance method.
-	QueryAggregatedBalanceFunc func(contextMoqParam context.Context, account vos.Account) (vos.QueryBalance, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -95,19 +89,11 @@ type UseCaseMock struct {
 			// AccountEntryRequest is the accountEntryRequest argument value.
 			AccountEntryRequest vos.AccountEntryRequest
 		}
-		// QueryAggregatedBalance holds details about calls to the QueryAggregatedBalance method.
-		QueryAggregatedBalance []struct {
-			// ContextMoqParam is the contextMoqParam argument value.
-			ContextMoqParam context.Context
-			// Account is the account argument value.
-			Account vos.Account
-		}
 	}
-	lockCreateTransaction      sync.RWMutex
-	lockGetAccountBalance      sync.RWMutex
-	lockGetSyntheticReport     sync.RWMutex
-	lockListAccountEntries     sync.RWMutex
-	lockQueryAggregatedBalance sync.RWMutex
+	lockCreateTransaction  sync.RWMutex
+	lockGetAccountBalance  sync.RWMutex
+	lockGetSyntheticReport sync.RWMutex
+	lockListAccountEntries sync.RWMutex
 }
 
 // CreateTransaction calls CreateTransactionFunc.
@@ -259,40 +245,5 @@ func (mock *UseCaseMock) ListAccountEntriesCalls() []struct {
 	mock.lockListAccountEntries.RLock()
 	calls = mock.calls.ListAccountEntries
 	mock.lockListAccountEntries.RUnlock()
-	return calls
-}
-
-// QueryAggregatedBalance calls QueryAggregatedBalanceFunc.
-func (mock *UseCaseMock) QueryAggregatedBalance(contextMoqParam context.Context, account vos.Account) (vos.QueryBalance, error) {
-	if mock.QueryAggregatedBalanceFunc == nil {
-		panic("UseCaseMock.QueryAggregatedBalanceFunc: method is nil but UseCase.QueryAggregatedBalance was just called")
-	}
-	callInfo := struct {
-		ContextMoqParam context.Context
-		Account         vos.Account
-	}{
-		ContextMoqParam: contextMoqParam,
-		Account:         account,
-	}
-	mock.lockQueryAggregatedBalance.Lock()
-	mock.calls.QueryAggregatedBalance = append(mock.calls.QueryAggregatedBalance, callInfo)
-	mock.lockQueryAggregatedBalance.Unlock()
-	return mock.QueryAggregatedBalanceFunc(contextMoqParam, account)
-}
-
-// QueryAggregatedBalanceCalls gets all the calls that were made to QueryAggregatedBalance.
-// Check the length with:
-//     len(mockedUseCase.QueryAggregatedBalanceCalls())
-func (mock *UseCaseMock) QueryAggregatedBalanceCalls() []struct {
-	ContextMoqParam context.Context
-	Account         vos.Account
-} {
-	var calls []struct {
-		ContextMoqParam context.Context
-		Account         vos.Account
-	}
-	mock.lockQueryAggregatedBalance.RLock()
-	calls = mock.calls.QueryAggregatedBalance
-	mock.lockQueryAggregatedBalance.RUnlock()
 	return calls
 }

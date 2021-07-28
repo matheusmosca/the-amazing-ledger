@@ -51,7 +51,7 @@ func (r LedgerRepository) GetAccountBalance(ctx context.Context, account vos.Acc
 		return vos.AccountBalance{}, fmt.Errorf("failed to get account balance: %w", pgErr)
 	}
 
-	return vos.NewAccountBalance(
+	return vos.NewAnalyticalAccountBalance(
 		account,
 		vos.Version(currentVersion),
 		totalCredit,

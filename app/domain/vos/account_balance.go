@@ -5,17 +5,25 @@ type AccountBalance struct {
 	CurrentVersion Version
 	TotalCredit    int
 	TotalDebit     int
+	Balance        int
 }
 
-func NewAccountBalance(account Account, version Version, totalCredit, totalDebit int) AccountBalance {
+func NewAnalyticalAccountBalance(account Account, version Version, totalCredit, totalDebit int) AccountBalance {
 	return AccountBalance{
 		Account:        account,
 		CurrentVersion: version,
 		TotalCredit:    totalCredit,
 		TotalDebit:     totalDebit,
+		Balance:        totalCredit - totalDebit,
 	}
 }
 
-func (a AccountBalance) Balance() int {
-	return a.TotalCredit - a.TotalDebit
+func NewSyntheticAccountBalance(account Account, balance int) AccountBalance {
+	return AccountBalance{
+		Account:        account,
+		CurrentVersion: IgnoreAccountVersion,
+		TotalCredit:    0,
+		TotalDebit:     0,
+		Balance:        balance,
+	}
 }

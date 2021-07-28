@@ -21,7 +21,7 @@ func (a *API) GetAccountBalance(ctx context.Context, request *proto.GetAccountBa
 		"handler": "GetAccountBalance",
 	})
 
-	accountName, err := vos.NewAnalyticalAccount(request.AccountPath)
+	accountName, err := vos.NewAccount(request.Account)
 	if err != nil {
 		log.WithError(err).Error("can't create account name")
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -39,40 +39,10 @@ func (a *API) GetAccountBalance(ctx context.Context, request *proto.GetAccountBa
 	}
 
 	return &proto.GetAccountBalanceResponse{
-		AccountPath:    accountBalance.Account.Value(),
+		Account:        accountBalance.Account.Value(),
 		CurrentVersion: accountBalance.CurrentVersion.AsInt64(),
 		TotalCredit:    int64(accountBalance.TotalCredit),
 		TotalDebit:     int64(accountBalance.TotalDebit),
-		Balance:        int64(accountBalance.Balance()),
-	}, nil
-}
-
-func (a *API) QueryAggregatedBalance(ctx context.Context, request *proto.QueryAggregatedBalanceRequest) (*proto.QueryAggregatedBalanceResponse, error) {
-	defer newrelic.FromContext(ctx).StartSegment("QueryAggregatedBalance").End()
-
-	log := a.log.WithFields(logrus.Fields{
-		"handler": "QueryAggregatedBalance",
-	})
-
-	query, err := vos.NewAccount(request.Query)
-	if err != nil {
-		log.WithError(err).Error("failed to create account query")
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	queryBalance, err := a.UseCase.QueryAggregatedBalance(ctx, query)
-	if err != nil {
-		if errors.Is(err, app.ErrAccountNotFound) {
-			log.WithError(err).Error("accounts for the given query do not exist")
-			return nil, status.Error(codes.NotFound, err.Error())
-		}
-
-		log.WithError(err).Error("failed to query aggregated account balance")
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	return &proto.QueryAggregatedBalanceResponse{
-		Query:   query.Value(),
-		Balance: int64(queryBalance.Balance),
+		Balance:        int64(accountBalance.Balance),
 	}, nil
 }
