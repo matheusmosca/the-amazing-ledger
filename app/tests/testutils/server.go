@@ -2,15 +2,12 @@ package testutils
 
 import (
 	"context"
+	"fmt"
 	"net"
-	"net/http"
-	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/test/bufconn"
 
 	"github.com/stone-co/the-amazing-ledger/app"
 	"github.com/stone-co/the-amazing-ledger/app/domain/usecases"
@@ -19,7 +16,7 @@ import (
 	"github.com/stone-co/the-amazing-ledger/app/tests/testenv"
 )
 
-func StartServer(db *pgxpool.Pool, listener *bufconn.Listener, startGatewayServer bool) (*grpc.Server, *http.Server) {
+func StartServer(ctx context.Context, db *pgxpool.Pool, cfg *app.Config, startGatewayServer bool) {
 	log := logrus.New()
 
 	nr, err := newrelic.NewApplication(newrelic.ConfigEnabled(false))
@@ -30,53 +27,47 @@ func StartServer(db *pgxpool.Pool, listener *bufconn.Listener, startGatewayServe
 	ledgerRepository := postgres.NewLedgerRepository(db, log)
 	ledgerUsecase := usecases.NewLedgerUseCase(log, ledgerRepository)
 
-	cfg := &app.Config{
-		RPCServer: app.RPCServerConfig{
-			Host:            "0.0.0.0",
-			Port:            3000,
-			ShutdownTimeout: 5 * time.Second,
-			ReadTimeout:     30 * time.Second,
-			WriteTimeout:    10 * time.Second,
-		},
-		HttpServer: app.HttpServerConfig{
-			Host:            "0.0.0.0",
-			Port:            3001,
-			ShutdownTimeout: 5 * time.Second,
-			ReadTimeout:     30 * time.Second,
-			WriteTimeout:    10 * time.Second,
-		},
+	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.RPCServer.Host, cfg.RPCServer.Port))
+	if err != nil {
+		log.Panicf("failed to listen: %v", err)
 	}
 
-	ctx := context.Background()
-	commit := "undefined"
-	time := "undefined"
+	buildCommit := "undefined"
+	buildTime := "undefined"
 
-	rpcServer, gwServer, err := rpc.NewServer(ctx, ledgerUsecase, nr, cfg, log, commit, time)
+	rpcServer, gwServer, err := rpc.NewServer(ctx, ledgerUsecase, nr, cfg, log, buildCommit, buildTime)
 	if err != nil {
-		panic(err)
+		log.Panicf("could not create server: %v", err)
 	}
 
 	go func() {
-		if err := rpcServer.Serve(listener); err != nil {
-			panic(err)
+		if err = rpcServer.Serve(listener); err != nil {
+			log.Panicf("could not start rpc server: %v", err)
 		}
 	}()
 
 	if startGatewayServer {
 		go func() {
-			if err := gwServer.ListenAndServe(); err != nil {
-				panic(err)
-			}
+			_ = gwServer.ListenAndServe()
 		}()
 	}
 
+	go func() {
+		<-ctx.Done()
+
+		ctx, cancel := context.WithTimeout(context.Background(), cfg.HttpServer.ShutdownTimeout)
+		defer cancel()
+
+		rpcServer.GracefulStop()
+
+		if startGatewayServer {
+			if err = gwServer.Shutdown(ctx); err != nil {
+				_ = gwServer.Close()
+				log.WithError(err).Fatal("could not stop server gracefully")
+			}
+		}
+	}()
+
 	testenv.LedgerRepository = ledgerRepository
-
-	return rpcServer, gwServer
-}
-
-func GetBufDialer(lis *bufconn.Listener) func(context.Context, string) (net.Conn, error) {
-	return func(context.Context, string) (net.Conn, error) {
-		return lis.Dial()
-	}
+	testenv.GatewayServer = fmt.Sprintf("http://%s", gwServer.Addr)
 }

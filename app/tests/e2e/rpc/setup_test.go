@@ -2,13 +2,15 @@ package rpc
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"testing"
+	"time"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/test/bufconn"
 
+	"github.com/stone-co/the-amazing-ledger/app"
 	"github.com/stone-co/the-amazing-ledger/app/tests"
 	"github.com/stone-co/the-amazing-ledger/app/tests/testenv"
 	"github.com/stone-co/the-amazing-ledger/app/tests/testutils"
@@ -18,10 +20,27 @@ import (
 func TestMain(m *testing.M) {
 	pgDocker := tests.SetupTest("../../../gateways/db/postgres/migrations")
 
-	listener := bufconn.Listen(1024 * 1024)
-	rpcServer, _ := testutils.StartServer(pgDocker.DB, listener, false)
+	ctx, cancel := context.WithCancel(context.Background())
+	cfg := &app.Config{
+		RPCServer: app.RPCServerConfig{
+			Host:            "0.0.0.0",
+			Port:            6000,
+			ShutdownTimeout: 5 * time.Second,
+			ReadTimeout:     30 * time.Second,
+			WriteTimeout:    10 * time.Second,
+		},
+		HttpServer: app.HttpServerConfig{
+			Host:            "0.0.0.0",
+			Port:            6001,
+			ShutdownTimeout: 5 * time.Second,
+			ReadTimeout:     30 * time.Second,
+			WriteTimeout:    10 * time.Second,
+		},
+	}
 
-	conn, err := grpc.DialContext(context.Background(), "bufnet", grpc.WithContextDialer(testutils.GetBufDialer(listener)), grpc.WithInsecure())
+	testutils.StartServer(ctx, pgDocker.DB, cfg, false)
+
+	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", cfg.RPCServer.Host, cfg.RPCServer.Port), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("could not create client connection: %v", err)
 	}
@@ -36,8 +55,7 @@ func TestMain(m *testing.M) {
 
 	exitCode := m.Run()
 
+	cancel()
 	tests.RemoveContainer(pgDocker)
-	rpcServer.Stop()
-
 	os.Exit(exitCode)
 }

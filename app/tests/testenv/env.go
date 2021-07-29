@@ -11,4 +11,5 @@ var (
 	DB               *pgxpool.Pool
 	RPCClient        proto.LedgerServiceClient
 	LedgerRepository *postgres.LedgerRepository
+	GatewayServer    string
 )
