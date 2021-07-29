@@ -23,7 +23,7 @@ func NewPage(p *proto.RequestPagination) (Page, error) {
 		return Page{Size: _defaultPageSize}, nil
 	}
 
-	if p.PageSize == 0 {
+	if p.PageSize <= 0 {
 		return Page{}, app.ErrInvalidPageSize
 	}
 
