@@ -34,7 +34,7 @@ func TestE2E_RPC_ListAccountEntriesSuccess(t *testing.T) {
 		{
 			name: "should return a list of account entries",
 			seedRepo: func(t *testing.T) {
-				testseed.CreateTransaction(t, e1, e2)
+				_ = testseed.CreateTransaction(t, e1, e2)
 			},
 			requestSetup: func(t *testing.T) *proto.ListAccountEntriesRequest {
 				return &proto.ListAccountEntriesRequest{
@@ -48,7 +48,7 @@ func TestE2E_RPC_ListAccountEntriesSuccess(t *testing.T) {
 		{
 			name: "should return an empty list of account entries if account path has no entries",
 			seedRepo: func(t *testing.T) {
-				testseed.CreateTransaction(t, e1, e2)
+				_ = testseed.CreateTransaction(t, e1, e2)
 			},
 			requestSetup: func(t *testing.T) *proto.ListAccountEntriesRequest {
 				return &proto.ListAccountEntriesRequest{
@@ -62,7 +62,7 @@ func TestE2E_RPC_ListAccountEntriesSuccess(t *testing.T) {
 		{
 			name: "should return an empty list of account entries if startDate/endDate is in the future",
 			seedRepo: func(t *testing.T) {
-				testseed.CreateTransaction(t, e1, e2)
+				_ = testseed.CreateTransaction(t, e1, e2)
 			},
 			requestSetup: func(t *testing.T) *proto.ListAccountEntriesRequest {
 				return &proto.ListAccountEntriesRequest{
@@ -76,8 +76,8 @@ func TestE2E_RPC_ListAccountEntriesSuccess(t *testing.T) {
 		{
 			name: "should return first page",
 			seedRepo: func(t *testing.T) {
-				testseed.CreateTransaction(t, e1, e2)
-				testseed.CreateTransaction(t, e3, e4)
+				_ = testseed.CreateTransaction(t, e1, e2)
+				_ = testseed.CreateTransaction(t, e3, e4)
 			},
 			requestSetup: func(t *testing.T) *proto.ListAccountEntriesRequest {
 				return &proto.ListAccountEntriesRequest{
@@ -94,8 +94,8 @@ func TestE2E_RPC_ListAccountEntriesSuccess(t *testing.T) {
 		{
 			name: "should return second page",
 			seedRepo: func(t *testing.T) {
-				testseed.CreateTransaction(t, e1, e2)
-				testseed.CreateTransaction(t, e3, e4)
+				_ = testseed.CreateTransaction(t, e1, e2)
+				_ = testseed.CreateTransaction(t, e3, e4)
 			},
 			requestSetup: func(t *testing.T) *proto.ListAccountEntriesRequest {
 				request := &proto.ListAccountEntriesRequest{
