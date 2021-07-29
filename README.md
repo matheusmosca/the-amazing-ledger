@@ -1,4 +1,4 @@
-<b>[WARNING] DO NOT USE IN PRODUCTION UNTIL V1 LAUNCHES! CHANGES IN MIGRATIONS AND OTHER BREAKS CAN HAPPEN !!!</b>
+**[WARNING] DO NOT USE IN PRODUCTION UNTIL V1 LAUNCHES! CHANGES IN MIGRATIONS AND OTHER BREAKS CAN HAPPEN !!!**
 
 <h1 align="center">
   <br>
@@ -30,12 +30,16 @@ The system supports the following account types:
 - **income**: Represents the money you have earned, where money comes from. The values of theses accounts are naturally negative.
 
 # Dependencies
+
 ## buf-build (v)
+
 - download & install it
 https://docs.buf.build/installation
 
 ## protobuf
+```bash
 $ sudo apt install protobuf-compiler
+```
 
 # Development
 
@@ -83,11 +87,15 @@ curl -i -X POST localhost:3000/api/v1/transactions -d \
 ```
 
 # Grpc
+
+```bash
 $ go mod tidy
 $ make generate
+```
 
 # Connect to the Database
-```
+
+```bash
 $ docker exec -ti the-amazing-ledger_postgres_1 bash
 --- container ---
 # psql -U postgres
