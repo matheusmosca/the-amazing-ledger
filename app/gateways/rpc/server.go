@@ -82,12 +82,12 @@ func newGatewayServer(ctx context.Context, cfg *app.Config, commit, time string)
 		return nil, fmt.Errorf("failed to register health handler: %w", err)
 	}
 
-	err = gwMux.HandlePath(http.MethodGet, "/api/v1/metrics", httpHandlers.MetricsHandler)
+	err = gwMux.HandlePath(http.MethodGet, "/metrics", httpHandlers.MetricsHandler)
 	if err != nil {
 		return nil, fmt.Errorf("failed to configure metrics handler: %w", err)
 	}
 
-	err = gwMux.HandlePath(http.MethodGet, "/api/v1/version", httpHandlers.VersionHandler(commit, time))
+	err = gwMux.HandlePath(http.MethodGet, "/version", httpHandlers.VersionHandler(commit, time))
 	if err != nil {
 		return nil, fmt.Errorf("failed to configure version handler: %w", err)
 	}
