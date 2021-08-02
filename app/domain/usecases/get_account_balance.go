@@ -15,10 +15,10 @@ func (l *LedgerUseCase) GetAccountBalance(ctx context.Context, account vos.Accou
 	)
 
 	switch account.Type() {
-	case vos.Analytical:
-		accountBalance, err = l.repository.GetAccountBalance(ctx, account)
+	case vos.Analytic:
+		accountBalance, err = l.repository.GetAnalyticAccountBalance(ctx, account)
 	case vos.Synthetic:
-		accountBalance, err = l.repository.QueryAggregatedBalance(ctx, account)
+		accountBalance, err = l.repository.GetSyntheticAccountBalance(ctx, account)
 	default:
 		err = app.ErrInvalidAccountType
 	}

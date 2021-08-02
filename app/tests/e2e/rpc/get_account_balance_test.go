@@ -17,7 +17,7 @@ import (
 	proto "github.com/stone-co/the-amazing-ledger/gen/ledger"
 )
 
-func TestE2E_RPC_GetAccountBalanceSuccess_Analytical(t *testing.T) {
+func TestE2E_RPC_GetAccountBalanceSuccess_Analytic(t *testing.T) {
 	t.Run("should get account balance successfully", func(t *testing.T) {
 		e1 := testutils.CreateEntry(t, vos.DebitOperation, testdata.GenerateAccountPath(), vos.NextAccountVersion, 100)
 		e2 := testutils.CreateEntry(t, vos.CreditOperation, testdata.GenerateAccountPath(), vos.NextAccountVersion, 100)

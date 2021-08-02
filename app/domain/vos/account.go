@@ -43,11 +43,11 @@ func (a Account) Type() AccountType {
 	return a.accountType
 }
 
-// AccountType indicates what the given account represents, being either a analytical account or a synthetic one.
+// AccountType indicates what the given account represents, being either analytic or a synthetic.
 type AccountType uint8
 
 const (
-	Analytical AccountType = iota + 1
+	Analytic AccountType = iota + 1
 	Synthetic
 )
 
@@ -89,22 +89,22 @@ type state struct {
 	componentHasStar bool
 }
 
-// NewAnalyticalAccount creates a new valid Account, which can only represent an analytical account.
-func NewAnalyticalAccount(account string) (Account, error) {
+// NewAnalyticAccount creates a new valid Account, which can only be of analytic type.
+func NewAnalyticAccount(account string) (Account, error) {
 	return newAccount(account, true)
 }
 
-// NewAccount creates a new valid Account, which can represents an analytical account, or a synthetic one.
+// NewAccount creates a new valid Account.
 func NewAccount(account string) (Account, error) {
 	return newAccount(account, false)
 }
 
-func newAccount(account string, analyticalOnly bool) (Account, error) {
+func newAccount(account string, analyticOnly bool) (Account, error) {
 	if len(account) == 0 {
 		return Account{}, app.ErrInvalidAccountStructure
 	}
 
-	st := &state{strategy: Analytical}
+	st := &state{strategy: Analytic}
 
 	var (
 		r   rune
@@ -124,7 +124,7 @@ func newAccount(account string, analyticalOnly bool) (Account, error) {
 		case r == dot:
 			err = treatDot(account, st)
 		case r == star:
-			if analyticalOnly {
+			if analyticOnly {
 				err = app.ErrInvalidSingleAccountComponentCharacters
 				break
 			}

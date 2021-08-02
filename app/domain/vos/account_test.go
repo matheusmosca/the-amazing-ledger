@@ -17,29 +17,29 @@ func TestNewAccount(t *testing.T) {
 		wantErr    error
 	}{
 		{
-			name:    "Analytical simple",
+			name:    "Analytic simple",
 			account: "asset.account.example",
 			want: Account{
 				value:       "asset.account.example",
-				accountType: Analytical,
+				accountType: Analytic,
 			},
 			wantErr: nil,
 		},
 		{
-			name:    "Analytical complete",
+			name:    "Analytic complete",
 			account: "asset.account.abc_123",
 			want: Account{
 				value:       "asset.account.abc_123",
-				accountType: Analytical,
+				accountType: Analytic,
 			},
 			wantErr: nil,
 		},
 		{
-			name:    "Analytical with upper",
+			name:    "Analytic with upper",
 			account: "asset.Account.example",
 			want: Account{
 				value:       "asset.account.example",
-				accountType: Analytical,
+				accountType: Analytic,
 			},
 			wantErr: nil,
 		},
@@ -137,7 +137,7 @@ func TestNewAccount(t *testing.T) {
 			wantErr: app.ErrInvalidAccountComponentCharacters,
 		},
 		{
-			name:       "Analytical only should fail if any '*' is present",
+			name:       "Analytic should only fail if any '*' is present",
 			account:    "*.account",
 			singleOnly: true,
 			want:       Account{},
@@ -158,7 +158,7 @@ func TestNewAccount(t *testing.T) {
 			)
 
 			if tt.singleOnly {
-				got, err = NewAnalyticalAccount(tt.account)
+				got, err = NewAnalyticAccount(tt.account)
 			} else {
 				got, err = NewAccount(tt.account)
 			}

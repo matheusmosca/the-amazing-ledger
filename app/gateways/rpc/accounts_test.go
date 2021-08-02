@@ -16,12 +16,12 @@ import (
 	proto "github.com/stone-co/the-amazing-ledger/gen/ledger"
 )
 
-func TestAPI_GetAccountBalance_Analytical_Success(t *testing.T) {
+func TestAPI_GetAccountBalance_Analytic_Success(t *testing.T) {
 	t.Run("should get account balance successfully", func(t *testing.T) {
 		account, err := vos.NewAccount(testdata.GenerateAccountPath())
 		assert.NoError(t, err)
 
-		accountBalance := vos.NewAnalyticalAccountBalance(account, vos.Version(1), 200, 100)
+		accountBalance := vos.NewAnalyticAccountBalance(account, vos.Version(1), 200)
 		mockedUsecase := &mocks.UseCaseMock{
 			GetAccountBalanceFunc: func(ctx context.Context, accountPath vos.Account) (vos.AccountBalance, error) {
 				accountBalance.Account = accountPath
@@ -41,7 +41,7 @@ func TestAPI_GetAccountBalance_Analytical_Success(t *testing.T) {
 		assert.Equal(t, &proto.GetAccountBalanceResponse{
 			Account:        request.Account,
 			CurrentVersion: accountBalance.CurrentVersion.AsInt64(),
-			Balance:        int64(accountBalance.TotalCredit - accountBalance.TotalDebit),
+			Balance:        200,
 		}, got)
 	})
 }
