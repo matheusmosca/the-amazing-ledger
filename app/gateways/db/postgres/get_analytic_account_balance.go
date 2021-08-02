@@ -16,9 +16,9 @@ import (
 const getAccountBalanceQuery = `
 select
 	total_balance,
-    version
+	version
 from
-    get_analytic_account_balance($1)
+	get_analytic_account_balance($1)
 ;
 `
 

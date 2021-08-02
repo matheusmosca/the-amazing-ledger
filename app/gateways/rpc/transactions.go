@@ -50,7 +50,7 @@ func (a *API) CreateTransaction(ctx context.Context, req *proto.CreateTransactio
 		domainEntry, domainErr := entities.NewEntry(
 			entryID,
 			vos.OperationType(proto.Operation_value[entry.Operation.String()]),
-			entry.AccountId,
+			entry.Account,
 			vos.Version(entry.ExpectedVersion),
 			int(entry.Amount),
 			metadata,

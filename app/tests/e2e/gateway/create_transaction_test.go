@@ -32,7 +32,7 @@ type createTransactionBody struct {
 
 type entry struct {
 	ID              string `json:"id"`
-	AccountID       string `json:"account_id"`
+	Account         string `json:"account"`
 	ExpectedVersion int64  `json:"expected_version"`
 	Operation       int8   `json:"operation"`
 	Amount          int64  `json:"amount"`
@@ -45,14 +45,14 @@ func TestE2E_Gateway_CreateTransactionSuccess(t *testing.T) {
 			Entries: []entry{
 				{
 					ID:              uuid.New().String(),
-					AccountID:       testdata.GenerateAccountPath(),
+					Account:         testdata.GenerateAccountPath(),
 					ExpectedVersion: vos.NextAccountVersion.AsInt64(),
 					Operation:       int8(vos.DebitOperation),
 					Amount:          100,
 				},
 				{
 					ID:              uuid.New().String(),
-					AccountID:       testdata.GenerateAccountPath(),
+					Account:         testdata.GenerateAccountPath(),
 					ExpectedVersion: vos.NextAccountVersion.AsInt64(),
 					Operation:       int8(vos.CreditOperation),
 					Amount:          100,
@@ -110,14 +110,14 @@ func TestE2E_Gateway_CreateTransactionFailure(t *testing.T) {
 				Entries: []entry{
 					{
 						ID:              uuid.New().String(),
-						AccountID:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: vos.NextAccountVersion.AsInt64(),
 						Operation:       int8(vos.DebitOperation),
 						Amount:          100,
 					},
 					{
 						ID:              uuid.New().String(),
-						AccountID:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: vos.NextAccountVersion.AsInt64(),
 						Operation:       int8(vos.CreditOperation),
 						Amount:          100,
@@ -142,14 +142,14 @@ func TestE2E_Gateway_CreateTransactionFailure(t *testing.T) {
 				Entries: []entry{
 					{
 						ID:              "invalid entry id",
-						AccountID:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: vos.NextAccountVersion.AsInt64(),
 						Operation:       int8(vos.DebitOperation),
 						Amount:          100,
 					},
 					{
 						ID:              uuid.New().String(),
-						AccountID:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: vos.NextAccountVersion.AsInt64(),
 						Operation:       int8(vos.CreditOperation),
 						Amount:          100,
@@ -174,14 +174,14 @@ func TestE2E_Gateway_CreateTransactionFailure(t *testing.T) {
 				Entries: []entry{
 					{
 						ID:              uuid.New().String(),
-						AccountID:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: vos.NextAccountVersion.AsInt64(),
 						Operation:       int8(proto.Operation_OPERATION_UNSPECIFIED),
 						Amount:          100,
 					},
 					{
 						ID:              uuid.New().String(),
-						AccountID:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: vos.NextAccountVersion.AsInt64(),
 						Operation:       int8(vos.CreditOperation),
 						Amount:          100,
@@ -206,14 +206,14 @@ func TestE2E_Gateway_CreateTransactionFailure(t *testing.T) {
 				Entries: []entry{
 					{
 						ID:              uuid.New().String(),
-						AccountID:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: vos.NextAccountVersion.AsInt64(),
 						Operation:       int8(vos.DebitOperation),
 						Amount:          -100,
 					},
 					{
 						ID:              uuid.New().String(),
-						AccountID:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: vos.NextAccountVersion.AsInt64(),
 						Operation:       int8(vos.CreditOperation),
 						Amount:          100,
@@ -238,7 +238,7 @@ func TestE2E_Gateway_CreateTransactionFailure(t *testing.T) {
 				Entries: []entry{
 					{
 						ID:              uuid.New().String(),
-						AccountID:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: vos.NextAccountVersion.AsInt64(),
 						Operation:       int8(vos.DebitOperation),
 						Amount:          100,
@@ -263,14 +263,14 @@ func TestE2E_Gateway_CreateTransactionFailure(t *testing.T) {
 				Entries: []entry{
 					{
 						ID:              uuid.New().String(),
-						AccountID:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: vos.NextAccountVersion.AsInt64(),
 						Operation:       int8(vos.DebitOperation),
 						Amount:          100,
 					},
 					{
 						ID:              uuid.New().String(),
-						AccountID:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: vos.NextAccountVersion.AsInt64(),
 						Operation:       int8(vos.CreditOperation),
 						Amount:          100,
@@ -303,14 +303,14 @@ func TestE2E_Gateway_CreateTransactionFailure(t *testing.T) {
 				Entries: []entry{
 					{
 						ID:              uuid.New().String(),
-						AccountID:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: vos.NextAccountVersion.AsInt64(),
 						Operation:       int8(vos.DebitOperation),
 						Amount:          100,
 					},
 					{
 						ID:              uuid.New().String(),
-						AccountID:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: vos.NextAccountVersion.AsInt64(),
 						Operation:       int8(vos.CreditOperation),
 						Amount:          100,

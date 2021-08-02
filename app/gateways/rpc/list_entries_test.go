@@ -34,10 +34,10 @@ func TestAPI_ListAccountEntries_Success(t *testing.T) {
 				},
 			},
 			request: &proto.ListAccountEntriesRequest{
-				AccountPath: "liability.credit_card.account1",
-				StartDate:   timestamppb.Now(),
-				EndDate:     timestamppb.Now(),
-				Page:        nil,
+				Account:   "liability.credit_card.account1",
+				StartDate: timestamppb.Now(),
+				EndDate:   timestamppb.Now(),
+				Page:      nil,
 			},
 			want: func() (*proto.ListAccountEntriesResponse, error) {
 				return &proto.ListAccountEntriesResponse{
@@ -62,10 +62,10 @@ func TestAPI_ListAccountEntries_Success(t *testing.T) {
 				},
 			},
 			request: &proto.ListAccountEntriesRequest{
-				AccountPath: "liability.credit_card.account1",
-				StartDate:   timestamppb.Now(),
-				EndDate:     timestamppb.Now(),
-				Page:        nil,
+				Account:   "liability.credit_card.account1",
+				StartDate: timestamppb.Now(),
+				EndDate:   timestamppb.Now(),
+				Page:      nil,
 			},
 			want: func() (*proto.ListAccountEntriesResponse, error) {
 				cursor, err := pagination.NewCursor(map[string]interface{}{"abc": 123})
@@ -93,7 +93,7 @@ func TestAPI_ListAccountEntries_Success(t *testing.T) {
 			assert.Equal(t, want, got)
 			assert.Len(t, tt.useCaseSetup.ListAccountEntriesCalls(), 1)
 
-			account, _ := vos.NewAnalyticalAccount(tt.request.AccountPath)
+			account, _ := vos.NewAnalyticAccount(tt.request.Account)
 			page, _ := pagination.NewPage(nil)
 			assert.Equal(t, vos.AccountEntryRequest{
 				Account:   account,
@@ -117,10 +117,10 @@ func TestAPI_ListAccountEntries_InvalidRequest(t *testing.T) {
 			name:         "should return an error with an invalid account path",
 			useCaseSetup: &mocks.UseCaseMock{},
 			request: &proto.ListAccountEntriesRequest{
-				AccountPath: "liability.$.account1",
-				StartDate:   timestamppb.Now(),
-				EndDate:     timestamppb.Now(),
-				Page:        nil,
+				Account:   "liability.$.account1",
+				StartDate: timestamppb.Now(),
+				EndDate:   timestamppb.Now(),
+				Page:      nil,
 			},
 			expectedCode:    codes.InvalidArgument,
 			expectedMessage: "only alphanumeric, underscore and star (*) characters are supported",
@@ -129,10 +129,10 @@ func TestAPI_ListAccountEntries_InvalidRequest(t *testing.T) {
 			name:         "should return an error with nil start date",
 			useCaseSetup: &mocks.UseCaseMock{},
 			request: &proto.ListAccountEntriesRequest{
-				AccountPath: "liability.credit_card.account1",
-				StartDate:   nil,
-				EndDate:     timestamppb.Now(),
-				Page:        nil,
+				Account:   "liability.credit_card.account1",
+				StartDate: nil,
+				EndDate:   timestamppb.Now(),
+				Page:      nil,
 			},
 			expectedCode:    codes.InvalidArgument,
 			expectedMessage: "start_date must have a value",
@@ -141,7 +141,7 @@ func TestAPI_ListAccountEntries_InvalidRequest(t *testing.T) {
 			name:         "should return an error with invalid start date",
 			useCaseSetup: &mocks.UseCaseMock{},
 			request: &proto.ListAccountEntriesRequest{
-				AccountPath: "liability.credit_card.account1",
+				Account: "liability.credit_card.account1",
 				StartDate: &timestamppb.Timestamp{
 					Seconds: -100,
 					Nanos:   -100,
@@ -156,10 +156,10 @@ func TestAPI_ListAccountEntries_InvalidRequest(t *testing.T) {
 			name:         "should return an error with nil end date",
 			useCaseSetup: &mocks.UseCaseMock{},
 			request: &proto.ListAccountEntriesRequest{
-				AccountPath: "liability.credit_card.account1",
-				StartDate:   timestamppb.Now(),
-				EndDate:     nil,
-				Page:        nil,
+				Account:   "liability.credit_card.account1",
+				StartDate: timestamppb.Now(),
+				EndDate:   nil,
+				Page:      nil,
 			},
 			expectedCode:    codes.InvalidArgument,
 			expectedMessage: "end_date must have a value",
@@ -168,8 +168,8 @@ func TestAPI_ListAccountEntries_InvalidRequest(t *testing.T) {
 			name:         "should return an error with invalid end date",
 			useCaseSetup: &mocks.UseCaseMock{},
 			request: &proto.ListAccountEntriesRequest{
-				AccountPath: "liability.credit_card.account1",
-				StartDate:   timestamppb.Now(),
+				Account:   "liability.credit_card.account1",
+				StartDate: timestamppb.Now(),
 				EndDate: &timestamppb.Timestamp{
 					Seconds: -100,
 					Nanos:   -100,
@@ -183,9 +183,9 @@ func TestAPI_ListAccountEntries_InvalidRequest(t *testing.T) {
 			name:         "should return an error with invalid pagination",
 			useCaseSetup: &mocks.UseCaseMock{},
 			request: &proto.ListAccountEntriesRequest{
-				AccountPath: "liability.credit_card.account1",
-				StartDate:   timestamppb.Now(),
-				EndDate:     timestamppb.Now(),
+				Account:   "liability.credit_card.account1",
+				StartDate: timestamppb.Now(),
+				EndDate:   timestamppb.Now(),
 				Page: &proto.RequestPagination{
 					PageSize:  0,
 					PageToken: "",

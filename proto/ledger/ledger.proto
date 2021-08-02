@@ -23,7 +23,7 @@ service LedgerService {
   };
   rpc ListAccountEntries(ListAccountEntriesRequest) returns (ListAccountEntriesResponse){
     option (google.api.http) = {
-      get: "/api/v1/accounts/{account_path}/history"
+      get: "/api/v1/accounts/{account}/history"
     };
   };
   rpc GetSyntheticReport(GetSyntheticReportRequest) returns (GetSyntheticReportResponse){
@@ -54,7 +54,7 @@ message Entry  {
   // It's the idempotency key, and must be unique (UUID).
   string id = 1;
   // Account involved in the operation.
-  string account_id = 2;
+  string account = 2;
   // To deal with optimistic lock.
   int64 expected_version = 3;
   // Operation: debit or credit.
@@ -103,7 +103,7 @@ message RequestPagination {
 message ListAccountEntriesRequest {
   reserved 4;
   // The account path
-  string account_path = 1;
+  string account = 1;
   // Start history date
   google.protobuf.Timestamp start_date = 2;
   // End history date

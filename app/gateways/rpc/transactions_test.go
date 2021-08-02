@@ -38,7 +38,7 @@ func TestAPI_CreateTransaction_Success(t *testing.T) {
 				Entries: []*proto.Entry{
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_DEBIT,
 						Amount:          123,
@@ -54,7 +54,7 @@ func TestAPI_CreateTransaction_Success(t *testing.T) {
 					},
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_CREDIT,
 						Amount:          123,
@@ -112,14 +112,14 @@ func TestAPI_CreateTransaction_InvalidRequest(t *testing.T) {
 				Entries: []*proto.Entry{
 					{
 						Id:              "invalid-entry-id",
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_DEBIT,
 						Amount:          123,
 					},
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_CREDIT,
 						Amount:          123,
@@ -140,14 +140,14 @@ func TestAPI_CreateTransaction_InvalidRequest(t *testing.T) {
 				Entries: []*proto.Entry{
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 2,
 						Operation:       proto.Operation_OPERATION_UNSPECIFIED,
 						Amount:          123,
 					},
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_CREDIT,
 						Amount:          123,
@@ -168,14 +168,14 @@ func TestAPI_CreateTransaction_InvalidRequest(t *testing.T) {
 				Entries: []*proto.Entry{
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 2,
 						Operation:       proto.Operation_OPERATION_CREDIT,
 						Amount:          -3,
 					},
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_DEBIT,
 						Amount:          123,
@@ -196,7 +196,7 @@ func TestAPI_CreateTransaction_InvalidRequest(t *testing.T) {
 				Entries: []*proto.Entry{
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 2,
 						Operation:       proto.Operation_OPERATION_CREDIT,
 						Amount:          100,
@@ -217,14 +217,14 @@ func TestAPI_CreateTransaction_InvalidRequest(t *testing.T) {
 				Entries: []*proto.Entry{
 					{
 						Id:              uuid.New().String(),
-						AccountId:       "assets",
+						Account:         "assets",
 						ExpectedVersion: 2,
 						Operation:       proto.Operation_OPERATION_CREDIT,
 						Amount:          123,
 					},
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_DEBIT,
 						Amount:          123,

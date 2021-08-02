@@ -28,14 +28,14 @@ func TestE2E_RPC_CreateTransactionSuccess(t *testing.T) {
 			Entries: []*proto.Entry{
 				{
 					Id:              uuid.New().String(),
-					AccountId:       testdata.GenerateAccountPath(),
+					Account:         testdata.GenerateAccountPath(),
 					ExpectedVersion: 3,
 					Operation:       proto.Operation_OPERATION_DEBIT,
 					Amount:          123,
 				},
 				{
 					Id:              uuid.New().String(),
-					AccountId:       testdata.GenerateAccountPath(),
+					Account:         testdata.GenerateAccountPath(),
 					ExpectedVersion: 3,
 					Operation:       proto.Operation_OPERATION_CREDIT,
 					Amount:          123,
@@ -66,14 +66,14 @@ func TestE2E_RPC_CreateTransactionFailure(t *testing.T) {
 				Entries: []*proto.Entry{
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_DEBIT,
 						Amount:          123,
 					},
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_CREDIT,
 						Amount:          123,
@@ -93,14 +93,14 @@ func TestE2E_RPC_CreateTransactionFailure(t *testing.T) {
 				Entries: []*proto.Entry{
 					{
 						Id:              "invalid-entry-id",
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_DEBIT,
 						Amount:          123,
 					},
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_CREDIT,
 						Amount:          123,
@@ -120,14 +120,14 @@ func TestE2E_RPC_CreateTransactionFailure(t *testing.T) {
 				Entries: []*proto.Entry{
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_UNSPECIFIED,
 						Amount:          123,
 					},
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_CREDIT,
 						Amount:          123,
@@ -147,14 +147,14 @@ func TestE2E_RPC_CreateTransactionFailure(t *testing.T) {
 				Entries: []*proto.Entry{
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_DEBIT,
 						Amount:          -123,
 					},
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_CREDIT,
 						Amount:          123,
@@ -174,7 +174,7 @@ func TestE2E_RPC_CreateTransactionFailure(t *testing.T) {
 				Entries: []*proto.Entry{
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_CREDIT,
 						Amount:          123,
@@ -194,14 +194,14 @@ func TestE2E_RPC_CreateTransactionFailure(t *testing.T) {
 				Entries: []*proto.Entry{
 					{
 						Id:              uuid.New().String(),
-						AccountId:       "assets",
+						Account:         "assets",
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_DEBIT,
 						Amount:          123,
 					},
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_CREDIT,
 						Amount:          123,
@@ -221,14 +221,14 @@ func TestE2E_RPC_CreateTransactionFailure(t *testing.T) {
 				Entries: []*proto.Entry{
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_DEBIT,
 						Amount:          123,
 					},
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_CREDIT,
 						Amount:          123,
@@ -255,14 +255,14 @@ func TestE2E_RPC_CreateTransactionFailure(t *testing.T) {
 				Entries: []*proto.Entry{
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_DEBIT,
 						Amount:          123,
 					},
 					{
 						Id:              uuid.New().String(),
-						AccountId:       testdata.GenerateAccountPath(),
+						Account:         testdata.GenerateAccountPath(),
 						ExpectedVersion: 3,
 						Operation:       proto.Operation_OPERATION_CREDIT,
 						Amount:          123,
@@ -291,10 +291,10 @@ func TestE2E_RPC_CreateTransactionFailure(t *testing.T) {
 			response, err := testenv.RPCClient.CreateTransaction(context.Background(), request)
 			assert.Nil(t, response)
 
-			status, ok := status.FromError(err)
+			sts, ok := status.FromError(err)
 			assert.True(t, ok)
-			assert.Equal(t, tt.expectedCode, status.Code())
-			assert.Equal(t, tt.expectedMsg, status.Message())
+			assert.Equal(t, tt.expectedCode, sts.Code())
+			assert.Equal(t, tt.expectedMsg, sts.Message())
 		})
 	}
 }

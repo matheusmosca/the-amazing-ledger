@@ -19,7 +19,38 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/accounts/{accountPath}/history": {
+    "/api/v1/accounts/{account}/balance": {
+      "get": {
+        "operationId": "LedgerService_GetAccountBalance",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ledgerGetAccountBalanceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "account",
+            "description": "The account name, can be either a synthetic or an analytical one.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "LedgerService"
+        ]
+      }
+    },
+    "/api/v1/accounts/{account}/history": {
       "get": {
         "operationId": "LedgerService_ListAccountEntries",
         "responses": {
@@ -38,7 +69,7 @@
         },
         "parameters": [
           {
-            "name": "accountPath",
+            "name": "account",
             "description": "The account path",
             "in": "path",
             "required": true,
@@ -73,37 +104,6 @@
             "description": "Cursor for the next page.",
             "in": "query",
             "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "LedgerService"
-        ]
-      }
-    },
-    "/api/v1/accounts/{account}/balance": {
-      "get": {
-        "operationId": "LedgerService_GetAccountBalance",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/ledgerGetAccountBalanceResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "account",
-            "description": "The account name, can be either a synthetic or an analytical one.",
-            "in": "path",
-            "required": true,
             "type": "string"
           }
         ],
@@ -331,7 +331,7 @@
           "type": "string",
           "description": "It's the idempotency key, and must be unique (UUID)."
         },
-        "accountId": {
+        "account": {
           "type": "string",
           "description": "Account involved in the operation."
         },
