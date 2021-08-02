@@ -1,21 +1,20 @@
 package usecases
 
 import (
-	"github.com/sirupsen/logrus"
-
 	"github.com/stone-co/the-amazing-ledger/app/domain"
+	"github.com/stone-co/the-amazing-ledger/app/domain/instrumentators"
 )
 
 var _ domain.UseCase = &LedgerUseCase{}
 
 type LedgerUseCase struct {
-	log        *logrus.Logger
-	repository domain.Repository
+	instrumentator *instrumentators.LedgerInstrumentator
+	repository     domain.Repository
 }
 
-func NewLedgerUseCase(log *logrus.Logger, repository domain.Repository) *LedgerUseCase {
+func NewLedgerUseCase(repository domain.Repository, instrumentator *instrumentators.LedgerInstrumentator) *LedgerUseCase {
 	return &LedgerUseCase{
-		log:        log,
-		repository: repository,
+		repository:     repository,
+		instrumentator: instrumentator,
 	}
 }

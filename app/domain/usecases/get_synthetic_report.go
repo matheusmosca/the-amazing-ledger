@@ -10,6 +10,8 @@ import (
 )
 
 func (l *LedgerUseCase) GetSyntheticReport(ctx context.Context, query vos.Account, level int, startTime time.Time, endTime time.Time) (*vos.SyntheticReport, error) {
+	defer l.instrumentator.MonitorSegment(ctx).End()
+
 	if level < 1 {
 		level = len(strings.Split(query.Value(), "."))
 	}
@@ -19,5 +21,6 @@ func (l *LedgerUseCase) GetSyntheticReport(ctx context.Context, query vos.Accoun
 		return nil, fmt.Errorf("failed to get synthetic report: %w", err)
 	}
 
+	l.instrumentator.GotSyntheticReport(ctx, *syntheticReport)
 	return syntheticReport, nil
 }

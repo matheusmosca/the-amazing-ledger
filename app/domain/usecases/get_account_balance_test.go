@@ -4,10 +4,12 @@ import (
 	"context"
 	"testing"
 
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stone-co/the-amazing-ledger/app"
+	"github.com/stone-co/the-amazing-ledger/app/domain/instrumentators"
 	"github.com/stone-co/the-amazing-ledger/app/domain/vos"
 	"github.com/stone-co/the-amazing-ledger/app/tests/mocks"
 	"github.com/stone-co/the-amazing-ledger/app/tests/testdata"
@@ -24,7 +26,7 @@ func TestLedgerUseCase_GetAccountBalance_Analytical(t *testing.T) {
 				return accountBalance, nil
 			},
 		}
-		usecase := NewLedgerUseCase(logrus.New(), mockedRepository)
+		usecase := NewLedgerUseCase(mockedRepository, instrumentators.NewLedgerInstrumentator(logrus.New(), &newrelic.Application{}))
 
 		got, err := usecase.GetAccountBalance(context.Background(), accountPath)
 		assert.NoError(t, err)
@@ -45,7 +47,7 @@ func TestLedgerUseCase_GetAccountBalance_Analytical(t *testing.T) {
 				return vos.AccountBalance{}, app.ErrAccountNotFound
 			},
 		}
-		usecase := NewLedgerUseCase(logrus.New(), mockedRepository)
+		usecase := NewLedgerUseCase(mockedRepository, instrumentators.NewLedgerInstrumentator(logrus.New(), &newrelic.Application{}))
 
 		got, err := usecase.GetAccountBalance(context.Background(), accountPath)
 		assert.Empty(t, got)
@@ -64,7 +66,9 @@ func TestLedgerUseCase_GetAccountBalance_Synthetic(t *testing.T) {
 				return queryBalance, nil
 			},
 		}
-		usecase := NewLedgerUseCase(logrus.New(), mockedRepository)
+
+		nr, _ := newrelic.NewApplication()
+		usecase := NewLedgerUseCase(mockedRepository, instrumentators.NewLedgerInstrumentator(logrus.New(), nr))
 
 		got, err := usecase.GetAccountBalance(context.Background(), account)
 		assert.NoError(t, err)
@@ -80,7 +84,9 @@ func TestLedgerUseCase_GetAccountBalance_Synthetic(t *testing.T) {
 				return vos.AccountBalance{}, app.ErrAccountNotFound
 			},
 		}
-		usecase := NewLedgerUseCase(logrus.New(), mockedRepository)
+
+		nr, _ := newrelic.NewApplication()
+		usecase := NewLedgerUseCase(mockedRepository, instrumentators.NewLedgerInstrumentator(logrus.New(), nr))
 
 		got, err := usecase.GetAccountBalance(context.Background(), query)
 		assert.Empty(t, got)

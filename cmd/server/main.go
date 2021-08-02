@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/stone-co/the-amazing-ledger/app"
+	"github.com/stone-co/the-amazing-ledger/app/domain/instrumentators"
 	"github.com/stone-co/the-amazing-ledger/app/domain/usecases"
 	"github.com/stone-co/the-amazing-ledger/app/gateways/db/postgres"
 	"github.com/stone-co/the-amazing-ledger/app/gateways/rpc"
@@ -27,10 +28,12 @@ func main() {
 		log.WithError(err).Fatal("unable to load app configuration")
 	}
 
-	nr, err := newrelic.App(cfg.NewRelic.AppName, cfg.NewRelic.LicenseKey, logrus.NewEntry(log))
+	nr, err := newrelic.NewApp(cfg.NewRelic.AppName, cfg.NewRelic.LicenseKey, logrus.NewEntry(log))
 	if err != nil {
 		log.WithError(err).Fatal("error starting new relic")
 	}
+
+	ledgerInstrumentator := instrumentators.NewLedgerInstrumentator(log, nr)
 
 	conn, err := postgres.ConnectPool(cfg.Postgres.DSN(), log)
 	if err != nil {
@@ -47,8 +50,8 @@ func main() {
 		log.WithError(err).Panic("failed to listen")
 	}
 
-	ledgerRepository := postgres.NewLedgerRepository(conn, log)
-	ledgerUseCase := usecases.NewLedgerUseCase(log, ledgerRepository)
+	ledgerRepository := postgres.NewLedgerRepository(conn, ledgerInstrumentator)
+	ledgerUseCase := usecases.NewLedgerUseCase(ledgerRepository, ledgerInstrumentator)
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)

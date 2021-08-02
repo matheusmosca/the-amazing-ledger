@@ -14,7 +14,7 @@ Container_Boundary(ledger, "Ledger Service") {
     Component(report_usecase, "Report Usecase", "Go", "")
     Component(acc_repository, "Repository", "interface")
     Component(report_repository, "Repository", "interface")
-    Component(inst_probe, "Probe", "Go", "interface")
+    Component(inst_probe, "Instrumentator", "Go", "interface")
 
 
     Rel(acc_api, acc_usecase, "Uses")

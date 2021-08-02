@@ -10,7 +10,6 @@ import (
 	"github.com/jackc/pgx/v4"
 
 	"github.com/stone-co/the-amazing-ledger/app/domain/vos"
-	"github.com/stone-co/the-amazing-ledger/app/instrumentation/newrelic"
 )
 
 const syntheticReportQuery = `
@@ -32,7 +31,7 @@ func (r *LedgerRepository) GetSyntheticReport(ctx context.Context, query vos.Acc
 
 	sqlQuery, params := buildQueryAndParams(query, level, startTime, endTime)
 
-	defer newrelic.NewDatastoreSegment(ctx, collection, operation, sqlQuery).End()
+	defer r.pb.MonitorDataSegment(ctx, collection, operation, sqlQuery).End()
 	rows, errQuery := r.db.Query(
 		ctx,
 		sqlQuery,

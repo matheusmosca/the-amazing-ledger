@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/stone-co/the-amazing-ledger/app"
+	"github.com/stone-co/the-amazing-ledger/app/domain/instrumentators"
 	"github.com/stone-co/the-amazing-ledger/app/domain/usecases"
 	"github.com/stone-co/the-amazing-ledger/app/gateways/db/postgres"
 	"github.com/stone-co/the-amazing-ledger/app/gateways/rpc"
@@ -24,8 +25,9 @@ func StartServer(ctx context.Context, db *pgxpool.Pool, cfg *app.Config, startGa
 		log.Fatalf("failed to create newrelic application: %v", err)
 	}
 
-	ledgerRepository := postgres.NewLedgerRepository(db, log)
-	ledgerUsecase := usecases.NewLedgerUseCase(log, ledgerRepository)
+	ledgerInstrumentator := instrumentators.NewLedgerInstrumentator(log, nr)
+	ledgerRepository := postgres.NewLedgerRepository(db, ledgerInstrumentator)
+	ledgerUsecase := usecases.NewLedgerUseCase(ledgerRepository, ledgerInstrumentator)
 
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.RPCServer.Host, cfg.RPCServer.Port))
 	if err != nil {

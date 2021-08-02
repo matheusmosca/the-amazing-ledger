@@ -5,15 +5,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stone-co/the-amazing-ledger/app/domain/entities"
+	"github.com/stone-co/the-amazing-ledger/app/domain/instrumentators"
 	"github.com/stone-co/the-amazing-ledger/app/domain/vos"
 )
 
 func TestLedgerRepository_GetSyntheticReportSuccess(t *testing.T) {
-	r := NewLedgerRepository(pgDocker.DB, logrus.New())
+	r := NewLedgerRepository(pgDocker.DB, &instrumentators.LedgerInstrumentator{})
 	ctx := context.Background()
 
 	accountBase := "liability.assets"
