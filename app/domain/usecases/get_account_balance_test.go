@@ -15,14 +15,14 @@ import (
 	"github.com/stone-co/the-amazing-ledger/app/tests/testdata"
 )
 
-func TestLedgerUseCase_GetAccountBalance_Analytical(t *testing.T) {
+func TestLedgerUseCase_GetAccountBalance_Analytic(t *testing.T) {
 	t.Run("should return account balance successfully", func(t *testing.T) {
-		accountPath, err := vos.NewAnalyticalAccount(testdata.GenerateAccountPath())
+		accountPath, err := vos.NewAnalyticAccount(testdata.GenerateAccountPath())
 		assert.NoError(t, err)
 
-		accountBalance := vos.NewAnalyticalAccountBalance(accountPath, vos.Version(1), 150, 130)
+		accountBalance := vos.NewAnalyticAccountBalance(accountPath, vos.Version(1), 150)
 		mockedRepository := &mocks.RepositoryMock{
-			GetAccountBalanceFunc: func(ctx context.Context, account vos.Account) (vos.AccountBalance, error) {
+			GetAnalyticAccountBalanceFunc: func(ctx context.Context, account vos.Account) (vos.AccountBalance, error) {
 				return accountBalance, nil
 			},
 		}
@@ -33,17 +33,15 @@ func TestLedgerUseCase_GetAccountBalance_Analytical(t *testing.T) {
 
 		assert.Equal(t, accountBalance.Account, got.Account)
 		assert.Equal(t, accountBalance.CurrentVersion, got.CurrentVersion)
-		assert.Equal(t, accountBalance.TotalCredit, got.TotalCredit)
-		assert.Equal(t, accountBalance.TotalDebit, got.TotalDebit)
 		assert.Equal(t, accountBalance.Balance, got.Balance)
 	})
 
 	t.Run("should return an error if account does not exist", func(t *testing.T) {
-		accountPath, err := vos.NewAnalyticalAccount(testdata.GenerateAccountPath())
+		accountPath, err := vos.NewAnalyticAccount(testdata.GenerateAccountPath())
 		assert.NoError(t, err)
 
 		mockedRepository := &mocks.RepositoryMock{
-			GetAccountBalanceFunc: func(ctx context.Context, account vos.Account) (vos.AccountBalance, error) {
+			GetAnalyticAccountBalanceFunc: func(ctx context.Context, account vos.Account) (vos.AccountBalance, error) {
 				return vos.AccountBalance{}, app.ErrAccountNotFound
 			},
 		}
@@ -62,7 +60,7 @@ func TestLedgerUseCase_GetAccountBalance_Synthetic(t *testing.T) {
 
 		queryBalance := vos.NewSyntheticAccountBalance(account, 20)
 		mockedRepository := &mocks.RepositoryMock{
-			QueryAggregatedBalanceFunc: func(ctx context.Context, account vos.Account) (vos.AccountBalance, error) {
+			GetSyntheticAccountBalanceFunc: func(ctx context.Context, account vos.Account) (vos.AccountBalance, error) {
 				return queryBalance, nil
 			},
 		}
@@ -80,7 +78,7 @@ func TestLedgerUseCase_GetAccountBalance_Synthetic(t *testing.T) {
 		assert.NoError(t, err)
 
 		mockedRepository := &mocks.RepositoryMock{
-			QueryAggregatedBalanceFunc: func(ctx context.Context, account vos.Account) (vos.AccountBalance, error) {
+			GetSyntheticAccountBalanceFunc: func(ctx context.Context, account vos.Account) (vos.AccountBalance, error) {
 				return vos.AccountBalance{}, app.ErrAccountNotFound
 			},
 		}

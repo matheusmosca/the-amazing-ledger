@@ -24,7 +24,7 @@ func TestLedgerRepository_QueryAggregatedBalanceFailure(t *testing.T) {
 		query, err := vos.NewAccount("liability.agg.*")
 		assert.NoError(t, err)
 
-		_, err = r.QueryAggregatedBalance(ctx, query)
+		_, err = r.GetSyntheticAccountBalance(ctx, query)
 		assert.ErrorIs(t, err, app.ErrAccountNotFound)
 	})
 }
@@ -42,37 +42,27 @@ func TestLedgerRepository_QueryAggregatedBalanceSuccess(t *testing.T) {
 	query, err := vos.NewAccount("liability.agg.*")
 	assert.NoError(t, err)
 
-	type args struct {
-		acc1   vos.Account
-		acc2   vos.Account
-		debit  int
-		credit int
-	}
-
 	type wants struct {
-		balance     int
-		snapErr     error
-		snapBalance int
+		accountBalance int
+		snapBalance    int
+		snapErr        error
 	}
 
 	testCases := []struct {
 		name     string
 		repoSeed func(t *testing.T, ctx context.Context, r *LedgerRepository)
-		args     args
 		wants    wants
 	}{
 		{
-			name:     "should query aggregated balance involving two accounts",
-			repoSeed: func(t *testing.T, ctx context.Context, r *LedgerRepository) {},
-			args: args{
-				acc1:   acc1,
-				acc2:   acc2,
-				debit:  100,
-				credit: 100,
+			name: "should query aggregated balance involving two accounts",
+			repoSeed: func(t *testing.T, ctx context.Context, r *LedgerRepository) {
+				e1 := createEntry(t, vos.DebitOperation, acc1.Value(), vos.NextAccountVersion, 100)
+				e2 := createEntry(t, vos.CreditOperation, acc2.Value(), vos.IgnoreAccountVersion, 100)
+				createTransaction(t, ctx, r, e1, e2)
 			},
 			wants: wants{
-				balance: 0,
-				snapErr: pgx.ErrNoRows,
+				accountBalance: 0,
+				snapErr:        pgx.ErrNoRows,
 			},
 		},
 		{
@@ -80,21 +70,16 @@ func TestLedgerRepository_QueryAggregatedBalanceSuccess(t *testing.T) {
 			repoSeed: func(t *testing.T, ctx context.Context, r *LedgerRepository) {
 				e1 := createEntry(t, vos.DebitOperation, acc1.Value(), vos.NextAccountVersion, 100)
 				e2 := createEntry(t, vos.CreditOperation, acc2.Value(), vos.IgnoreAccountVersion, 100)
-
 				createTransaction(t, ctx, r, e1, e2)
 
-				_, err = r.QueryAggregatedBalance(ctx, query)
-				assert.NoError(t, err)
-			},
-			args: args{
-				acc1:   acc1,
-				acc2:   acc3,
-				debit:  100,
-				credit: 100,
+				e1 = createEntry(t, vos.CreditOperation, acc1.Value(), vos.NextAccountVersion, 100)
+				e2 = createEntry(t, vos.CreditOperation, acc2.Value(), vos.NextAccountVersion, 100)
+				e3 := createEntry(t, vos.DebitOperation, acc3.Value(), vos.IgnoreAccountVersion, 200)
+				createTransaction(t, ctx, r, e1, e2, e3)
 			},
 			wants: wants{
-				balance:     -100,
-				snapBalance: 0,
+				accountBalance: 200,
+				snapBalance:    0,
 			},
 		},
 		{
@@ -102,29 +87,23 @@ func TestLedgerRepository_QueryAggregatedBalanceSuccess(t *testing.T) {
 			repoSeed: func(t *testing.T, ctx context.Context, r *LedgerRepository) {
 				e1 := createEntry(t, vos.DebitOperation, acc1.Value(), vos.NextAccountVersion, 100)
 				e2 := createEntry(t, vos.CreditOperation, acc2.Value(), vos.IgnoreAccountVersion, 100)
-
 				createTransaction(t, ctx, r, e1, e2)
 
-				_, err = r.QueryAggregatedBalance(ctx, query)
-				assert.NoError(t, err)
+				e1 = createEntry(t, vos.CreditOperation, acc1.Value(), vos.NextAccountVersion, 100)
+				e2 = createEntry(t, vos.CreditOperation, acc2.Value(), vos.NextAccountVersion, 100)
+				e3 := createEntry(t, vos.DebitOperation, acc3.Value(), vos.IgnoreAccountVersion, 200)
+				createTransaction(t, ctx, r, e1, e2, e3)
 
 				e1 = createEntry(t, vos.DebitOperation, acc1.Value(), vos.IgnoreAccountVersion, 100)
-				e3 := createEntry(t, vos.CreditOperation, acc3.Value(), vos.NextAccountVersion, 100)
-
+				e3 = createEntry(t, vos.CreditOperation, acc3.Value(), vos.NextAccountVersion, 100)
 				createTransaction(t, ctx, r, e1, e3)
 
-				_, err = r.QueryAggregatedBalance(ctx, query)
+				_, err = r.GetSyntheticAccountBalance(ctx, query)
 				assert.NoError(t, err)
 			},
-			args: args{
-				acc1:   acc1,
-				acc2:   acc3,
-				debit:  200,
-				credit: 200,
-			},
 			wants: wants{
-				balance:     -300,
-				snapBalance: -100,
+				accountBalance: 100,
+				snapBalance:    200,
 			},
 		},
 	}
@@ -135,16 +114,11 @@ func TestLedgerRepository_QueryAggregatedBalanceSuccess(t *testing.T) {
 			r := NewLedgerRepository(pgDocker.DB, &instrumentators.LedgerInstrumentator{})
 			tt.repoSeed(t, ctx, r)
 
-			defer tests.TruncateTables(ctx, pgDocker.DB, "entry", "account_version", "aggregated_query_balance")
+			defer tests.TruncateTables(ctx, pgDocker.DB, "entry", "account_version", "account_balance")
 
-			e1 := createEntry(t, vos.DebitOperation, tt.args.acc1.Value(), vos.NextAccountVersion, tt.args.debit)
-			e2 := createEntry(t, vos.CreditOperation, tt.args.acc2.Value(), vos.IgnoreAccountVersion, tt.args.credit)
-
-			createTransaction(t, ctx, r, e1, e2)
-
-			balance, err := r.QueryAggregatedBalance(ctx, query)
+			balance, err := r.GetSyntheticAccountBalance(ctx, query)
 			assert.NoError(t, err)
-			assert.Equal(t, tt.wants.balance, balance.Balance)
+			assert.Equal(t, tt.wants.accountBalance, balance.Balance)
 
 			if tt.wants.snapErr != nil {
 				_, err = fetchQuerySnapshot(ctx, pgDocker.DB, query)
@@ -164,7 +138,7 @@ type querySnapshot struct {
 }
 
 func fetchQuerySnapshot(ctx context.Context, db *pgxpool.Pool, query vos.Account) (querySnapshot, error) {
-	const cmd = "select balance, tx_date from aggregated_query_balance where query = $1;"
+	const cmd = "select balance, tx_date from account_balance where account = $1;"
 
 	var snap querySnapshot
 
