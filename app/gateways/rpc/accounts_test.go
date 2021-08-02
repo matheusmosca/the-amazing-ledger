@@ -41,8 +41,6 @@ func TestAPI_GetAccountBalance_Analytical_Success(t *testing.T) {
 		assert.Equal(t, &proto.GetAccountBalanceResponse{
 			Account:        request.Account,
 			CurrentVersion: accountBalance.CurrentVersion.AsInt64(),
-			TotalCredit:    int64(accountBalance.TotalCredit),
-			TotalDebit:     int64(accountBalance.TotalDebit),
 			Balance:        int64(accountBalance.TotalCredit - accountBalance.TotalDebit),
 		}, got)
 	})
@@ -71,8 +69,6 @@ func TestAPI_GetAccountBalance_Synthetic_Success(t *testing.T) {
 		assert.Equal(t, &proto.GetAccountBalanceResponse{
 			Account:        account.Value(),
 			CurrentVersion: -1,
-			TotalCredit:    0,
-			TotalDebit:     0,
 			Balance:        100,
 		}, got)
 	})

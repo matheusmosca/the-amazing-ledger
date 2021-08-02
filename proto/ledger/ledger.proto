@@ -85,14 +85,10 @@ message GetAccountBalanceRequest {
 message GetAccountBalanceResponse {
   // The account name.
   string account = 1;
-  // The account version. Only available when requesting an analytical account balance.
+  // The account version. When a synthetic account is passed, -1 will be returned.
   int64 current_version = 2;
-  // All account credit accumulated. Only available when requesting an analytical account balance.
-  int64 total_credit = 3;
-  // All account debit accumulated. Only available when requesting an analytical account balance.
-  int64 total_debit = 4;
   // The account balance.
-  int64 balance = 5;
+  int64 balance = 3;
 }
 
 // Request Pagination

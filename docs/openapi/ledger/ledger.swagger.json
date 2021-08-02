@@ -366,17 +366,7 @@
         "currentVersion": {
           "type": "string",
           "format": "int64",
-          "description": "The account version. Only available when requesting an analytical account balance."
-        },
-        "totalCredit": {
-          "type": "string",
-          "format": "int64",
-          "description": "All account credit accumulated. Only available when requesting an analytical account balance."
-        },
-        "totalDebit": {
-          "type": "string",
-          "format": "int64",
-          "description": "All account debit accumulated. Only available when requesting an analytical account balance."
+          "description": "The account version. When a synthetic account is passed, -1 will be returned."
         },
         "balance": {
           "type": "string",
