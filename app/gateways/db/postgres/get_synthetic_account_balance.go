@@ -14,11 +14,11 @@ import (
 )
 
 const queryAggregatedBalanceQuery = `
-select query_aggregated_account_balance($1);
+select get_synthetic_account_balance($1);
 `
 
-func (r LedgerRepository) QueryAggregatedBalance(ctx context.Context, account vos.Account) (vos.AccountBalance, error) {
-	const operation = "Repository.QueryAggregatedBalance"
+func (r LedgerRepository) GetSyntheticAccountBalance(ctx context.Context, account vos.Account) (vos.AccountBalance, error) {
+	const operation = "Repository.GetSyntheticAccountBalance"
 
 	defer newrelic.NewDatastoreSegment(ctx, collection, operation, queryAggregatedBalanceQuery).End()
 
