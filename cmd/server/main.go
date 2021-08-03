@@ -8,6 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/sirupsen/logrus"
 
 	"github.com/stone-co/the-amazing-ledger/app"
@@ -19,35 +21,39 @@ import (
 )
 
 func main() {
-	log := logrus.New()
-	log.Infoln("starting ledger process...")
-	log.Infof("build info: time[%s] git_hash[%s]", BuildTime, BuildGitCommit)
+	logger := log.With().
+		Str("module", "main").
+		Str("build_time", BuildTime).
+		Str("build_commit", BuildGitCommit).
+		Logger()
+
+	logger.Info().Msg("starting ledger process...")
 
 	cfg, err := app.LoadConfig()
 	if err != nil {
-		log.WithError(err).Fatal("unable to load app configuration")
+		logger.Panic().Err(err).Msg("failed to load app configurations")
 	}
 
-	nr, err := newrelic.NewApp(cfg.NewRelic.AppName, cfg.NewRelic.LicenseKey, logrus.NewEntry(log))
+	nr, err := newrelic.NewApp(cfg.NewRelic.AppName, cfg.NewRelic.LicenseKey, logrus.NewEntry(logrus.New()))
 	if err != nil {
-		log.WithError(err).Fatal("error starting new relic")
+		logger.Panic().Err(err).Msg("failed to start new relic")
 	}
 
-	ledgerInstrumentator := instrumentators.NewLedgerInstrumentator(log, nr)
+	ledgerInstrumentator := instrumentators.NewLedgerInstrumentator(nr)
 
-	conn, err := postgres.ConnectPool(cfg.Postgres.DSN(), log)
+	conn, err := postgres.ConnectPool(cfg.Postgres.DSN(), zerolog.New(os.Stderr))
 	if err != nil {
-		log.WithError(err).Fatal("unable to connect to database")
+		logger.Panic().Err(err).Msg("failed to connect to database")
 	}
 	defer conn.Close()
 
 	if err = postgres.RunMigrations(cfg.Postgres.URL()); err != nil {
-		log.WithError(err).Panic("running postgres migrations")
+		logger.Panic().Err(err).Msg("failed to run database migrations")
 	}
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.RPCServer.Host, cfg.RPCServer.Port))
 	if err != nil {
-		log.WithError(err).Panic("failed to listen")
+		logger.Panic().Err(err).Msg("failed to listen")
 	}
 
 	ledgerRepository := postgres.NewLedgerRepository(conn, ledgerInstrumentator)
@@ -56,14 +62,14 @@ func main() {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 
-	rpcServer, gwServer, err := rpc.NewServer(ctx, ledgerUseCase, nr, cfg, log, BuildGitCommit, BuildTime)
+	rpcServer, gwServer, err := rpc.NewServer(ctx, ledgerUseCase, nr, cfg, BuildGitCommit, BuildTime)
 	if err != nil {
-		log.WithError(err).Panic("failed to create server")
+		logger.Panic().Err(err).Msg("failed to create servers")
 	}
 
 	go func() {
 		if err = rpcServer.Serve(lis); err != nil {
-			log.WithError(err).Error("rpcServer Serve failed")
+			logger.Panic().Err(err).Msg("failed to serve rpc server")
 		}
 	}()
 
@@ -77,23 +83,23 @@ func main() {
 
 		if err = gwServer.Shutdown(ctx); err != nil {
 			_ = gwServer.Close()
-			log.WithError(err).Fatal("could not stop server gracefully")
+			logger.Error().Err(err).Msg("failed to stop gateway server gracefully")
 		}
 	}()
 
-	go handleInterrupt(log, cancel)
+	go handleInterrupt(cancel)
 
 	err = gwServer.ListenAndServe()
 	if err != nil {
-		log.WithError(err).Error("gwServer ListenAndServe failed")
+		logger.Panic().Err(err).Msg("failed to listen and serve gateway server")
 	}
 }
 
-func handleInterrupt(log *logrus.Logger, cancel context.CancelFunc) {
+func handleInterrupt(cancel context.CancelFunc) {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 	sig := <-signals
-	log.Infof("captured signal: %v - server shutdown\n", sig)
+	log.Info().Str("signal", sig.String()).Msg("captured signal - server shutdown")
 	signal.Stop(signals)
 	cancel()
 }

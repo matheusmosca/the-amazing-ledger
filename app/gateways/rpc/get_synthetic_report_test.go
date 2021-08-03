@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -25,7 +24,7 @@ func TestAPI_GetSyntheticReport(t *testing.T) {
 				return &vos.SyntheticReport{}, nil
 			},
 		}
-		api := NewAPI(logrus.New(), mockedUsecase)
+		api := NewAPI(mockedUsecase)
 
 		request := &proto.GetSyntheticReportRequest{
 			Account:   testdata.GenerateAccount(),
@@ -45,7 +44,7 @@ func TestAPI_GetSyntheticReport(t *testing.T) {
 				return nil, app.ErrInvalidAccountComponentSize
 			},
 		}
-		api := NewAPI(logrus.New(), mockedUsecase)
+		api := NewAPI(mockedUsecase)
 
 		request := &proto.GetSyntheticReportRequest{
 			Account:   testdata.GenerateAccount(),
@@ -59,7 +58,7 @@ func TestAPI_GetSyntheticReport(t *testing.T) {
 
 		assert.True(t, ok)
 		assert.Equal(t, codes.Internal, respStatus.Code())
-		assert.Equal(t, app.ErrInvalidAccountComponentSize.Error(), respStatus.Message())
+		assert.Equal(t, "internal server error", respStatus.Message())
 	})
 
 	t.Run("should not get synthetic report successfully, missing dates", func(t *testing.T) {
@@ -68,7 +67,7 @@ func TestAPI_GetSyntheticReport(t *testing.T) {
 				return &vos.SyntheticReport{}, nil
 			},
 		}
-		api := NewAPI(logrus.New(), mockedUsecase)
+		api := NewAPI(mockedUsecase)
 
 		request := &proto.GetSyntheticReportRequest{
 			Account: testdata.GenerateAccount(),
@@ -90,7 +89,7 @@ func TestAPI_GetSyntheticReport(t *testing.T) {
 				return &vos.SyntheticReport{}, nil
 			},
 		}
-		api := NewAPI(logrus.New(), mockedUsecase)
+		api := NewAPI(mockedUsecase)
 
 		request := &proto.GetSyntheticReportRequest{
 			Account:   testdata.GenerateAccount(),
@@ -110,7 +109,7 @@ func TestAPI_GetSyntheticReport(t *testing.T) {
 				return &vos.SyntheticReport{}, nil
 			},
 		}
-		api := NewAPI(logrus.New(), mockedUsecase)
+		api := NewAPI(mockedUsecase)
 
 		request := &proto.GetSyntheticReportRequest{
 			Account:   testdata.GenerateAccount(),

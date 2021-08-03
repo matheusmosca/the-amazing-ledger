@@ -6,15 +6,15 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 )
 
-func MetricsHandler(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+func MetricsHandler(w http.ResponseWriter, r *http.Request, _ map[string]string) {
 	promhttp.Handler().ServeHTTP(w, r)
 }
 
 func VersionHandler(commit, time string) runtime.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+	return func(w http.ResponseWriter, r *http.Request, _ map[string]string) {
 		b, err := json.Marshal(struct {
 			GitCommitHash string `json:"git_hash"`
 			BuildTime     string `json:"time"`
@@ -23,7 +23,7 @@ func VersionHandler(commit, time string) runtime.HandlerFunc {
 			BuildTime:     time,
 		})
 		if err != nil {
-			logrus.Errorf("failed to marshal version: %v", err)
+			log.Error().Err(err).Msg("failed to marshal version")
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 
@@ -31,7 +31,7 @@ func VersionHandler(commit, time string) runtime.HandlerFunc {
 
 		_, err = w.Write(b)
 		if err != nil {
-			logrus.Errorf("failed to write version body: %v", err)
+			log.Error().Err(err).Msg("failed to write version body")
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}

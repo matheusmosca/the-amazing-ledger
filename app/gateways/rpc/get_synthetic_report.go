@@ -3,7 +3,7 @@ package rpc
 import (
 	"context"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -12,13 +12,14 @@ import (
 )
 
 func (a *API) GetSyntheticReport(ctx context.Context, request *proto.GetSyntheticReportRequest) (*proto.GetSyntheticReportResponse, error) {
-	log := a.log.WithFields(logrus.Fields{
-		"handler": "GetSyntheticReport",
+	logger := zerolog.Ctx(ctx)
+	logger.UpdateContext(func(c zerolog.Context) zerolog.Context {
+		return c.Str("handler", "GetSyntheticReport")
 	})
 
 	account, err := vos.NewAccount(request.Account)
 	if err != nil {
-		log.WithError(err).Error("Invalid account query")
+		logger.Error().Err(err).Msg("invalid account")
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -41,8 +42,8 @@ func (a *API) GetSyntheticReport(ctx context.Context, request *proto.GetSyntheti
 
 	syntheticReport, err := a.UseCase.GetSyntheticReport(ctx, account, level, request.StartDate.AsTime(), request.EndDate.AsTime())
 	if err != nil {
-		log.WithError(err).Error("can't get synthetic report")
-		return nil, status.Error(codes.Internal, err.Error())
+		logger.Error().Err(err).Msg("can't get synthetic report")
+		return nil, status.Error(codes.Internal, "internal server error")
 	}
 
 	return &proto.GetSyntheticReportResponse{
@@ -53,7 +54,7 @@ func (a *API) GetSyntheticReport(ctx context.Context, request *proto.GetSyntheti
 }
 
 func toProto(paths []vos.AccountResult) []*proto.AccountResult {
-	protoPaths := []*proto.AccountResult{}
+	protoPaths := make([]*proto.AccountResult, 0, len(paths))
 
 	for _, element := range paths {
 		protoPaths = append(protoPaths, &proto.AccountResult{

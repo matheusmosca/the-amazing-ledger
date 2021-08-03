@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -82,7 +81,7 @@ func TestAPI_ListAccountEntries_Success(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			api := NewAPI(logrus.New(), tt.useCaseSetup)
+			api := NewAPI(tt.useCaseSetup)
 
 			got, err := api.ListAccountEntries(context.Background(), tt.request)
 			assert.NoError(t, err)
@@ -197,7 +196,7 @@ func TestAPI_ListAccountEntries_InvalidRequest(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			api := NewAPI(logrus.New(), tt.useCaseSetup)
+			api := NewAPI(tt.useCaseSetup)
 
 			_, err := api.ListAccountEntries(context.Background(), tt.request)
 			respStatus, ok := status.FromError(err)

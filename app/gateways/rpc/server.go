@@ -6,12 +6,11 @@ import (
 	"log"
 	"net/http"
 
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -22,8 +21,8 @@ import (
 	proto "github.com/stone-co/the-amazing-ledger/gen/ledger"
 )
 
-func NewServer(ctx context.Context, useCase *usecases.LedgerUseCase, nr *newrelic.Application, cfg *app.Config, log *logrus.Logger, commit, time string) (*grpc.Server, *http.Server, error) {
-	api := NewAPI(log, useCase)
+func NewServer(ctx context.Context, useCase *usecases.LedgerUseCase, nr *newrelic.Application, cfg *app.Config, commit, time string) (*grpc.Server, *http.Server, error) {
+	api := NewAPI(useCase)
 
 	grpcServer := newRPCServer(api, nr)
 
@@ -42,17 +41,18 @@ func newRPCServer(api *API, nr *newrelic.Application) *grpc.Server {
 		return status.Errorf(codes.Unknown, "panic triggered: %v", p)
 	}
 
-	opts := []grpc_recovery.Option{
-		grpc_recovery.WithRecoveryHandler(dealPanic),
+	opts := []grpcRecovery.Option{
+		grpcRecovery.WithRecoveryHandler(dealPanic),
 	}
 
 	srv := grpc.NewServer(
-		grpc_middleware.WithUnaryServerChain(
-			grpc_recovery.UnaryServerInterceptor(opts...),
+		grpcMiddleware.WithUnaryServerChain(
+			grpcRecovery.UnaryServerInterceptor(opts...),
 			nrgrpc.UnaryServerInterceptor(nr),
+			loggerInterceptor,
 		),
-		grpc_middleware.WithStreamServerChain(
-			grpc_recovery.StreamServerInterceptor(opts...),
+		grpcMiddleware.WithStreamServerChain(
+			grpcRecovery.StreamServerInterceptor(opts...),
 			nrgrpc.StreamServerInterceptor(nr),
 		),
 	)

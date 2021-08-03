@@ -131,7 +131,7 @@ func TestE2E_Gateway_CreateTransactionFailure(t *testing.T) {
 				status: http.StatusBadRequest,
 				body: responseBody{
 					Code:    3,
-					Message: "error parsing transaction id",
+					Message: "invalid transaction id",
 				},
 			},
 		},
@@ -163,7 +163,7 @@ func TestE2E_Gateway_CreateTransactionFailure(t *testing.T) {
 				status: http.StatusBadRequest,
 				body: responseBody{
 					Code:    3,
-					Message: "error parsing entry id",
+					Message: "invalid entry id",
 				},
 			},
 		},
@@ -321,10 +321,10 @@ func TestE2E_Gateway_CreateTransactionFailure(t *testing.T) {
 				Event:          1,
 			},
 			wants: wants{
-				status: http.StatusBadRequest,
+				status: http.StatusInternalServerError,
 				body: responseBody{
-					Code:    3,
-					Message: "failed to create transaction: idempotency key violation",
+					Code:    13,
+					Message: "internal server error",
 				},
 			},
 		},

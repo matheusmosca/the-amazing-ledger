@@ -4,26 +4,20 @@ import (
 	"context"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/sirupsen/logrus"
+
 	"github.com/stone-co/the-amazing-ledger/app/domain"
 )
 
 var _ domain.Instrumentator = &LedgerInstrumentator{}
 
 type LedgerInstrumentator struct {
-	logger   *logrus.Logger
 	newrelic *newrelic.Application
 }
 
-func NewLedgerInstrumentator(l *logrus.Logger, nr *newrelic.Application) *LedgerInstrumentator {
+func NewLedgerInstrumentator(nr *newrelic.Application) *LedgerInstrumentator {
 	return &LedgerInstrumentator{
-		logger:   l,
 		newrelic: nr,
 	}
-}
-
-func (lp LedgerInstrumentator) Log(ctx context.Context, value string) {
-	lp.logger.Infof(value)
 }
 
 func (lp LedgerInstrumentator) MonitorSegment(ctx context.Context) domain.Segment {
@@ -43,8 +37,4 @@ func (lp LedgerInstrumentator) MonitorDataSegment(ctx context.Context, collectio
 	}
 	seg.StartTime = txn.StartSegmentNow()
 	return seg
-}
-
-func (lp LedgerInstrumentator) Logger() *logrus.Logger {
-	return lp.logger
 }

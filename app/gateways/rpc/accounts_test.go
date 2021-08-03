@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -29,7 +28,7 @@ func TestAPI_GetAccountBalance_Analytic_Success(t *testing.T) {
 				return accountBalance, nil
 			},
 		}
-		api := NewAPI(logrus.New(), mockedUsecase)
+		api := NewAPI(mockedUsecase)
 
 		request := &proto.GetAccountBalanceRequest{
 			Account: account.Value(),
@@ -57,7 +56,7 @@ func TestAPI_GetAccountBalance_Synthetic_Success(t *testing.T) {
 				return balance, nil
 			},
 		}
-		api := NewAPI(logrus.New(), mockedUsecase)
+		api := NewAPI(mockedUsecase)
 
 		request := &proto.GetAccountBalanceRequest{
 			Account: "liability.stone.clients.*",
@@ -108,7 +107,7 @@ func TestAPI_GetAccountBalance_InvalidRequest(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			api := NewAPI(logrus.New(), tt.useCaseSetup)
+			api := NewAPI(tt.useCaseSetup)
 
 			_, err := api.GetAccountBalance(context.Background(), tt.request)
 			respStatus, ok := status.FromError(err)

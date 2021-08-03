@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stone-co/the-amazing-ledger/app/domain/instrumentators"
@@ -37,7 +36,7 @@ func TestLedgerUseCase_ListAccountEntries(t *testing.T) {
 				}, nil, nil
 			},
 		}
-		usecase := NewLedgerUseCase(mockedRepository, instrumentators.NewLedgerInstrumentator(logrus.New(), &newrelic.Application{}))
+		usecase := NewLedgerUseCase(mockedRepository, instrumentators.NewLedgerInstrumentator(&newrelic.Application{}))
 
 		page, err := pagination.NewPage(nil)
 		assert.NoError(t, err)
@@ -62,7 +61,7 @@ func TestLedgerUseCase_ListAccountEntries(t *testing.T) {
 				return []vos.AccountEntry{}, nil, nil
 			},
 		}
-		usecase := NewLedgerUseCase(mockedRepository, instrumentators.NewLedgerInstrumentator(logrus.New(), &newrelic.Application{}))
+		usecase := NewLedgerUseCase(mockedRepository, instrumentators.NewLedgerInstrumentator(&newrelic.Application{}))
 
 		page, err := pagination.NewPage(nil)
 		assert.NoError(t, err)

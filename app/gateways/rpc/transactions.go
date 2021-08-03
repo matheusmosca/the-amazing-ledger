@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -17,34 +17,31 @@ import (
 )
 
 func (a *API) CreateTransaction(ctx context.Context, req *proto.CreateTransactionRequest) (*emptypb.Empty, error) {
-
 	defer newrelic.FromContext(ctx).StartSegment("CreateTransaction").End()
 
-	log := a.log.WithFields(logrus.Fields{
-		"handler": "CreateTransaction",
+	logger := zerolog.Ctx(ctx)
+	logger.UpdateContext(func(c zerolog.Context) zerolog.Context {
+		return c.Str("handler", "CreateTransaction")
 	})
 
 	tid, err := uuid.Parse(req.Id)
 	if err != nil {
-		errMsg := "error parsing transaction id"
-		log.WithError(err).Error(errMsg)
-		return nil, status.Error(codes.InvalidArgument, errMsg)
+		logger.Error().Err(err).Msg("failed to parse transaction id")
+		return nil, status.Error(codes.InvalidArgument, "invalid transaction id")
 	}
 
 	domainEntries := make([]entities.Entry, len(req.Entries))
 	for i, entry := range req.Entries {
 		entryID, entryErr := uuid.Parse(entry.Id)
 		if entryErr != nil {
-			errMsg := "error parsing entry id"
-			log.WithError(err).Error(errMsg)
-			return nil, status.Error(codes.InvalidArgument, errMsg)
+			logger.Error().Err(entryErr).Int("index", i).Msg("failed to parse entry id")
+			return nil, status.Error(codes.InvalidArgument, "invalid entry id")
 		}
 
 		metadata, mErr := entry.Metadata.MarshalJSON()
 		if mErr != nil {
-			errMsg := "error marshaling entry metadata"
-			log.WithError(err).Error(errMsg)
-			return nil, status.Error(codes.InvalidArgument, errMsg)
+			logger.Error().Err(mErr).Int("index", i).Msg("failed to marshal entry metadata")
+			return nil, status.Error(codes.InvalidArgument, "invalid entry metadata")
 		}
 
 		domainEntry, domainErr := entities.NewEntry(
@@ -56,7 +53,7 @@ func (a *API) CreateTransaction(ctx context.Context, req *proto.CreateTransactio
 			metadata,
 		)
 		if domainErr != nil {
-			log.WithError(err).Error("error creating entry")
+			logger.Error().Err(mErr).Int("index", i).Msg("failed to create entry")
 			return nil, status.Error(codes.InvalidArgument, domainErr.Error())
 		}
 
@@ -74,8 +71,8 @@ func (a *API) CreateTransaction(ctx context.Context, req *proto.CreateTransactio
 	}
 
 	if err := a.UseCase.CreateTransaction(ctx, tx); err != nil {
-		log.WithError(err).Error("creating transaction")
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		logger.Error().Err(err).Msg("failed to save transaction")
+		return nil, status.Error(codes.Internal, "internal server error")
 	}
 
 	return &emptypb.Empty{}, nil

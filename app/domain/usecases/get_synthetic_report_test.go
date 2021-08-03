@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stone-co/the-amazing-ledger/app/domain/instrumentators"
@@ -43,7 +42,7 @@ func TestLedgerUseCase_GetSyntheticReport(t *testing.T) {
 			},
 		}
 
-		useCase := NewLedgerUseCase(&mockedRepository, instrumentators.NewLedgerInstrumentator(logrus.New(), &newrelic.Application{}))
+		useCase := NewLedgerUseCase(&mockedRepository, instrumentators.NewLedgerInstrumentator(&newrelic.Application{}))
 
 		got, err := useCase.GetSyntheticReport(context.Background(), query, level, date, date)
 		assert.NoError(t, err)

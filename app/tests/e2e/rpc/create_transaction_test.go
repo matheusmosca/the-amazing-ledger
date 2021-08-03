@@ -84,7 +84,7 @@ func TestE2E_RPC_CreateTransactionFailure(t *testing.T) {
 				CompetenceDate: timestamppb.Now(),
 			},
 			expectedCode: codes.InvalidArgument,
-			expectedMsg:  "error parsing transaction id",
+			expectedMsg:  "invalid transaction id",
 		},
 		{
 			name: "should return an error if entry id is invalid",
@@ -111,7 +111,7 @@ func TestE2E_RPC_CreateTransactionFailure(t *testing.T) {
 				CompetenceDate: timestamppb.Now(),
 			},
 			expectedCode: codes.InvalidArgument,
-			expectedMsg:  "error parsing entry id",
+			expectedMsg:  "invalid entry id",
 		},
 		{
 			name: "should return an error if operation is invalid",
@@ -272,8 +272,8 @@ func TestE2E_RPC_CreateTransactionFailure(t *testing.T) {
 				Event:          1,
 				CompetenceDate: timestamppb.Now(),
 			},
-			expectedCode: codes.InvalidArgument,
-			expectedMsg:  "failed to create transaction: idempotency key violation",
+			expectedCode: codes.Internal,
+			expectedMsg:  "internal server error",
 		},
 	}
 

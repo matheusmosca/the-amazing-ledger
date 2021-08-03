@@ -7,7 +7,8 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"github.com/stone-co/the-amazing-ledger/app"
 	"github.com/stone-co/the-amazing-ledger/app/domain/instrumentators"
@@ -18,33 +19,33 @@ import (
 )
 
 func StartServer(ctx context.Context, db *pgxpool.Pool, cfg *app.Config, startGatewayServer bool) {
-	log := logrus.New()
+	zerolog.SetGlobalLevel(zerolog.FatalLevel)
 
 	nr, err := newrelic.NewApplication(newrelic.ConfigEnabled(false))
 	if err != nil {
-		log.Fatalf("failed to create newrelic application: %v", err)
+		log.Fatal().Err(err).Msg("failed to create newrelic application")
 	}
 
-	ledgerInstrumentator := instrumentators.NewLedgerInstrumentator(log, nr)
+	ledgerInstrumentator := instrumentators.NewLedgerInstrumentator(nr)
 	ledgerRepository := postgres.NewLedgerRepository(db, ledgerInstrumentator)
 	ledgerUsecase := usecases.NewLedgerUseCase(ledgerRepository, ledgerInstrumentator)
 
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.RPCServer.Host, cfg.RPCServer.Port))
 	if err != nil {
-		log.Panicf("failed to listen: %v", err)
+		log.Fatal().Err(err).Msg("failed to listen")
 	}
 
 	buildCommit := "undefined"
 	buildTime := "undefined"
 
-	rpcServer, gwServer, err := rpc.NewServer(ctx, ledgerUsecase, nr, cfg, log, buildCommit, buildTime)
+	rpcServer, gwServer, err := rpc.NewServer(ctx, ledgerUsecase, nr, cfg, buildCommit, buildTime)
 	if err != nil {
-		log.Panicf("could not create server: %v", err)
+		log.Fatal().Err(err).Msg("failed to create servers")
 	}
 
 	go func() {
 		if err = rpcServer.Serve(listener); err != nil {
-			log.Panicf("could not start rpc server: %v", err)
+			log.Fatal().Err(err).Msg("failed to start rpc server")
 		}
 	}()
 
@@ -65,7 +66,7 @@ func StartServer(ctx context.Context, db *pgxpool.Pool, cfg *app.Config, startGa
 		if startGatewayServer {
 			if err = gwServer.Shutdown(ctx); err != nil {
 				_ = gwServer.Close()
-				log.WithError(err).Fatal("could not stop server gracefully")
+				log.Fatal().Err(err).Msg("failed to stop the server gracefully")
 			}
 		}
 	}()

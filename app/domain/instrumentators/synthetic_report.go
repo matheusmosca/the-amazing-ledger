@@ -2,16 +2,23 @@ package instrumentators
 
 import (
 	"context"
-	"fmt"
 	"time"
+
+	"github.com/rs/zerolog"
 
 	"github.com/stone-co/the-amazing-ledger/app/domain/vos"
 )
 
 func (lp *LedgerInstrumentator) GettingSyntheticReport(ctx context.Context, account vos.Account, startTime time.Time, endTime time.Time) {
-	lp.Log(ctx, fmt.Sprintf("getting synthetic report: %s/%s-%s", account.Value(), startTime.String(), endTime.String()))
+	zerolog.Ctx(ctx).Info().
+		Str("account", account.Value()).
+		Str("start_time", startTime.String()).
+		Str("end_time", endTime.String()).
+		Msg("getting synthetic report")
 }
 
 func (lp *LedgerInstrumentator) GotSyntheticReport(ctx context.Context, report vos.SyntheticReport) {
-	lp.Log(ctx, fmt.Sprintf("got synthetic report: num_accounts = %d, total_credit = %d, total_debit = %d", len(report.Results), report.TotalCredit, report.TotalDebit))
+	zerolog.Ctx(ctx).Info().
+		Int("accounts_total", len(report.Results)).
+		Msg("got synthetic report")
 }

@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -78,7 +77,7 @@ func TestAPI_CreateTransaction_Success(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			api := NewAPI(logrus.New(), tt.useCaseSetup)
+			api := NewAPI(tt.useCaseSetup)
 
 			got, err := api.CreateTransaction(context.Background(), tt.request)
 			assert.NoError(t, err)
@@ -102,7 +101,7 @@ func TestAPI_CreateTransaction_InvalidRequest(t *testing.T) {
 				Id: "invalid UUID",
 			},
 			expectedCode:    codes.InvalidArgument,
-			expectedMessage: "error parsing transaction id",
+			expectedMessage: "invalid transaction id",
 		},
 		{
 			name:         "should not create transaction when invalid entry ID",
@@ -130,7 +129,7 @@ func TestAPI_CreateTransaction_InvalidRequest(t *testing.T) {
 				CompetenceDate: timestamppb.Now(),
 			},
 			expectedCode:    codes.InvalidArgument,
-			expectedMessage: "error parsing entry id",
+			expectedMessage: "invalid entry id",
 		},
 		{
 			name:         "should not create transaction when invalid operation",
@@ -241,7 +240,7 @@ func TestAPI_CreateTransaction_InvalidRequest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			api := NewAPI(logrus.New(), tt.useCaseSetup)
+			api := NewAPI(tt.useCaseSetup)
 
 			_, err := api.CreateTransaction(context.Background(), tt.request)
 			respStatus, ok := status.FromError(err)

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -18,13 +18,14 @@ import (
 func (a *API) ListAccountEntries(ctx context.Context, request *proto.ListAccountEntriesRequest) (*proto.ListAccountEntriesResponse, error) {
 	defer newrelic.FromContext(ctx).StartSegment("ListAccountEntries").End()
 
-	log := a.log.WithFields(logrus.Fields{
-		"handler": "ListAccountEntries",
+	logger := zerolog.Ctx(ctx)
+	logger.UpdateContext(func(c zerolog.Context) zerolog.Context {
+		return c.Str("handler", "ListAccountEntries")
 	})
 
 	account, err := vos.NewAnalyticAccount(request.Account)
 	if err != nil {
-		log.WithError(err).Error("can't create account name")
+		logger.Error().Err(err).Msg("can't create account name")
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -42,6 +43,7 @@ func (a *API) ListAccountEntries(ctx context.Context, request *proto.ListAccount
 
 	page, err := pagination.NewPage(request.GetPage())
 	if err != nil {
+		logger.Error().Err(err).Msg("can't create page reference")
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
@@ -54,6 +56,7 @@ func (a *API) ListAccountEntries(ctx context.Context, request *proto.ListAccount
 
 	entries, err := a.UseCase.ListAccountEntries(ctx, req)
 	if err != nil {
+		logger.Error().Err(err).Msg("failed to list account entries")
 		return nil, status.Error(codes.Internal, "internal server error")
 	}
 
@@ -61,7 +64,7 @@ func (a *API) ListAccountEntries(ctx context.Context, request *proto.ListAccount
 	for _, entry := range entries.Entries {
 		metadata, err := structpb.NewStruct(entry.Metadata)
 		if err != nil {
-			log.WithError(err).Error("failed to convert map to structpb")
+			logger.Error().Err(err).Msg("failed to convert map to structpb")
 			return nil, status.Error(codes.Internal, "internal server error")
 		}
 
