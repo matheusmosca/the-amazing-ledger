@@ -184,7 +184,7 @@ func TestE2E_RPC_CreateTransactionFailure(t *testing.T) {
 				Event:          1,
 				CompetenceDate: timestamppb.Now(),
 			},
-			expectedCode: codes.Aborted,
+			expectedCode: codes.InvalidArgument,
 			expectedMsg:  "invalid entries number",
 		},
 		{
@@ -272,8 +272,8 @@ func TestE2E_RPC_CreateTransactionFailure(t *testing.T) {
 				Event:          1,
 				CompetenceDate: timestamppb.Now(),
 			},
-			expectedCode: codes.Internal,
-			expectedMsg:  "internal server error",
+			expectedCode: codes.InvalidArgument,
+			expectedMsg:  "invalid idempotency key",
 		},
 	}
 

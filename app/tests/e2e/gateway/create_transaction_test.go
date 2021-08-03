@@ -249,9 +249,9 @@ func TestE2E_Gateway_CreateTransactionFailure(t *testing.T) {
 				Event:          1,
 			},
 			wants: wants{
-				status: http.StatusConflict,
+				status: http.StatusBadRequest,
 				body: responseBody{
-					Code:    10,
+					Code:    3,
 					Message: "invalid entries number",
 				},
 			},
@@ -321,10 +321,10 @@ func TestE2E_Gateway_CreateTransactionFailure(t *testing.T) {
 				Event:          1,
 			},
 			wants: wants{
-				status: http.StatusInternalServerError,
+				status: http.StatusBadRequest,
 				body: responseBody{
-					Code:    13,
-					Message: "internal server error",
+					Code:    3,
+					Message: "invalid idempotency key",
 				},
 			},
 		},

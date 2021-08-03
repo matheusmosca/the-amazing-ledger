@@ -205,7 +205,7 @@ func TestAPI_CreateTransaction_InvalidRequest(t *testing.T) {
 				Event:          1,
 				CompetenceDate: timestamppb.Now(),
 			},
-			expectedCode:    codes.Aborted,
+			expectedCode:    codes.InvalidArgument,
 			expectedMessage: "invalid entries number",
 		},
 		{

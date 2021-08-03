@@ -52,15 +52,14 @@ func (r LedgerRepository) CreateTransaction(ctx context.Context, transaction ent
 			return err
 		}
 
-		if pgErr.Code == pgerrcode.RaiseException {
+		switch pgErr.Code {
+		case pgerrcode.RaiseException:
 			return app.ErrInvalidVersion
-		}
-
-		if pgErr.Code == pgerrcode.UniqueViolation {
+		case pgerrcode.UniqueViolation:
 			return app.ErrIdempotencyKeyViolation
+		default:
+			return err
 		}
-
-		return err
 	}
 
 	return nil

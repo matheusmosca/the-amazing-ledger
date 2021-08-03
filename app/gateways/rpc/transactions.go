@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -11,6 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	"github.com/stone-co/the-amazing-ledger/app"
 	"github.com/stone-co/the-amazing-ledger/app/domain/entities"
 	"github.com/stone-co/the-amazing-ledger/app/domain/vos"
 	proto "github.com/stone-co/the-amazing-ledger/gen/ledger"
@@ -28,6 +30,12 @@ func (a *API) CreateTransaction(ctx context.Context, req *proto.CreateTransactio
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to parse transaction id")
 		return nil, status.Error(codes.InvalidArgument, "invalid transaction id")
+	}
+
+	if req.CompetenceDate == nil {
+		return nil, status.Error(codes.InvalidArgument, "competence_date must have a value")
+	} else if !req.CompetenceDate.IsValid() {
+		return nil, status.Error(codes.InvalidArgument, "competence_date must be valid")
 	}
 
 	domainEntries := make([]entities.Entry, len(req.Entries))
@@ -53,7 +61,7 @@ func (a *API) CreateTransaction(ctx context.Context, req *proto.CreateTransactio
 			metadata,
 		)
 		if domainErr != nil {
-			logger.Error().Err(mErr).Int("index", i).Msg("failed to create entry")
+			logger.Error().Err(domainErr).Int("index", i).Msg("failed to create entry")
 			return nil, status.Error(codes.InvalidArgument, domainErr.Error())
 		}
 
@@ -67,12 +75,20 @@ func (a *API) CreateTransaction(ctx context.Context, req *proto.CreateTransactio
 
 	tx, err := entities.NewTransaction(tid, req.Event, req.Company, competenceDate, domainEntries...)
 	if err != nil {
-		return nil, status.Error(codes.Aborted, err.Error())
+		logger.Error().Err(err).Msg("failed to create transaction")
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	if err := a.UseCase.CreateTransaction(ctx, tx); err != nil {
 		logger.Error().Err(err).Msg("failed to save transaction")
-		return nil, status.Error(codes.Internal, "internal server error")
+		switch {
+		case errors.Is(err, app.ErrInvalidVersion):
+			return nil, status.Error(codes.InvalidArgument, "invalid account version")
+		case errors.Is(err, app.ErrIdempotencyKeyViolation):
+			return nil, status.Error(codes.InvalidArgument, "invalid idempotency key")
+		default:
+			return nil, status.Error(codes.Internal, "internal server error")
+		}
 	}
 
 	return &emptypb.Empty{}, nil
