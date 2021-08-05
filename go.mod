@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/Microsoft/go-winio v0.5.0 // indirect
-	github.com/bojand/ghz v0.70.0
+	github.com/bojand/ghz v0.96.0
 	github.com/cenkalti/backoff/v4 v4.1.1 // indirect
 	github.com/containerd/continuity v0.1.0 // indirect
 	github.com/fatih/color v1.12.0 // indirect

@@ -2,3 +2,6 @@ build/
 coverage.html
 coverage.out
 .idea
+cpu.profile
+mem.profile
+perftests/protoimage.bin
