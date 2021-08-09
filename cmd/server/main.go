@@ -2,13 +2,10 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"net"
 	"os"
 	"os/signal"
-	"runtime"
-	"runtime/pprof"
 	"syscall"
 
 	"github.com/rs/zerolog"
@@ -23,9 +20,6 @@ import (
 	"github.com/stone-co/the-amazing-ledger/app/instrumentation/newrelic"
 )
 
-var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
-var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
-
 func main() {
 	logger := log.With().
 		Str("module", "main").
@@ -34,20 +28,6 @@ func main() {
 		Logger()
 
 	logger.Info().Msg("starting ledger process...")
-
-	flag.Parse()
-	if *cpuprofile != "" {
-		logger.Printf("profilling cpu")
-		f, err := os.Create(*cpuprofile)
-		if err != nil {
-			logger.Panic().Err(err).Msg("could not create CPU profile: ")
-		}
-		defer f.Close()
-		if err := pprof.StartCPUProfile(f); err != nil {
-			logger.Panic().Err(err).Msg("could not start CPU profile: ")
-		}
-		defer pprof.StopCPUProfile()
-	}
 
 	cfg, err := app.LoadConfig()
 	if err != nil {
@@ -65,8 +45,10 @@ func main() {
 	if err != nil {
 		logger.Panic().Err(err).Msg("failed to connect to database")
 	}
+	logger.Info().Msg("connected to postgres pool")
 	defer conn.Close()
 
+	logger.Info().Msg("running migrations")
 	if err = postgres.RunMigrations(cfg.Postgres.URL()); err != nil {
 		logger.Panic().Err(err).Msg("failed to run database migrations")
 	}
@@ -86,8 +68,10 @@ func main() {
 	if err != nil {
 		logger.Panic().Err(err).Msg("failed to create servers")
 	}
+	logger.Info().Msg("created rpc and gateway servers")
 
 	go func() {
+		logger.Info().Msg("rpcServer listening")
 		if err = rpcServer.Serve(lis); err != nil {
 			logger.Panic().Err(err).Msg("failed to serve rpc server")
 		}
@@ -95,39 +79,28 @@ func main() {
 
 	go func() {
 		<-ctx.Done()
+		logger.Info().Msg("context canceled, initiating graceful stop")
 
 		ctx, cancel = context.WithTimeout(context.Background(), cfg.HttpServer.ShutdownTimeout)
 		defer cancel()
 
 		rpcServer.GracefulStop()
+		logger.Info().Msg("rpcServer stopped")
 
 		if err = gwServer.Shutdown(ctx); err != nil {
 			_ = gwServer.Close()
 			logger.Error().Err(err).Msg("failed to stop gateway server gracefully")
 		}
+		logger.Info().Msg("gateway stopped")
 	}()
 
 	go handleInterrupt(cancel)
 
+	logger.Info().Msg("gatewayServer up")
 	err = gwServer.ListenAndServe()
 	if err != nil {
 		logger.Panic().Err(err).Msg("failed to listen and serve gateway server")
 	}
-
-	if *memprofile != "" {
-
-		logger.Printf("profilling memory")
-		f, err := os.Create(*memprofile)
-		if err != nil {
-			logger.Panic().Err(err).Msg("could not create memory profile: ")
-		}
-		defer f.Close() // error handling omitted for example
-		runtime.GC()    // get up-to-date statistics
-		if err := pprof.WriteHeapProfile(f); err != nil {
-			logger.Panic().Err(err).Msg("could not write memory profile: ")
-		}
-	}
-
 }
 
 func handleInterrupt(cancel context.CancelFunc) {
