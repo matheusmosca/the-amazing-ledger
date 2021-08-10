@@ -12,14 +12,9 @@ import (
 )
 
 func (a *API) GetSyntheticReport(ctx context.Context, request *proto.GetSyntheticReportRequest) (*proto.GetSyntheticReportResponse, error) {
-	logger := zerolog.Ctx(ctx)
-	logger.UpdateContext(func(c zerolog.Context) zerolog.Context {
-		return c.Str("handler", "GetSyntheticReport")
-	})
-
 	account, err := vos.NewAccount(request.Account)
 	if err != nil {
-		logger.Error().Err(err).Msg("invalid account")
+		zerolog.Ctx(ctx).Error().Err(err).Msg("invalid account")
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -42,7 +37,7 @@ func (a *API) GetSyntheticReport(ctx context.Context, request *proto.GetSyntheti
 
 	syntheticReport, err := a.UseCase.GetSyntheticReport(ctx, account, level, request.StartDate.AsTime(), request.EndDate.AsTime())
 	if err != nil {
-		logger.Error().Err(err).Msg("can't get synthetic report")
+		zerolog.Ctx(ctx).Error().Err(err).Msg("can't get synthetic report")
 		return nil, status.Error(codes.Internal, "internal server error")
 	}
 
