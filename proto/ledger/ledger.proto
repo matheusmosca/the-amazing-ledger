@@ -101,13 +101,23 @@ message RequestPagination {
 
 // ListAccountEntries Request
 message ListAccountEntriesRequest {
-  reserved 4;
+  message Filter {
+    // Companies
+    repeated string companies = 1;
+    // Events
+    repeated int32 events = 2;
+    // Operation
+    Operation operation = 3;
+  }
+
   // The account path
   string account = 1;
   // Start history date
   google.protobuf.Timestamp start_date = 2;
   // End history date
   google.protobuf.Timestamp end_date = 3;
+  // Filters
+  Filter filter = 4;
   // Pagination
   RequestPagination page = 5;
 }

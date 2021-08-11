@@ -21,7 +21,7 @@ var pgDocker *tests.PostgresDocker
 func TestMain(m *testing.M) {
 	pgDocker = tests.SetupTest("./migrations")
 
-	_, err := pgDocker.DB.Exec(context.Background(), `insert into event (id, name) values (1, 'default');`)
+	_, err := pgDocker.DB.Exec(context.Background(), `insert into event (id, name) values (1, 'default'), (2, 'new');`)
 	if err != nil {
 		log.Fatalf("could not insert default event values: %v", err)
 	}

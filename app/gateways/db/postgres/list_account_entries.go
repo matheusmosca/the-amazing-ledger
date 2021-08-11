@@ -28,8 +28,28 @@ where
 	and competence_date < $3
 `
 
+	_accountEntriesCompanyFilter = `
+	and company = $%d
+`
+
+	_accountEntriesCompaniesFilter = `
+	and company = any($%d)
+`
+
+	_accountEntriesEventFilter = `
+	and event = $%d
+`
+
+	_accountEntriesEventsFilter = `
+	and event = any($%d)
+`
+
+	_accountEntriesOperationFilter = `
+	and operation = $%d
+`
+
 	_accountEntriesQueryPagination = `
-	and (competence_date, version) <= ($5, $6)
+	and (competence_date, version) <= ($%d, $%d)
 `
 
 	_accountEntriesQuerySuffix = `
@@ -105,8 +125,43 @@ func (r LedgerRepository) ListAccountEntries(ctx context.Context, req vos.Accoun
 }
 
 func generateListAccountEntriesQuery(req vos.AccountEntryRequest) (string, []interface{}, error) {
-	query := _accountEntriesQueryPrefix
-	args := []interface{}{req.Account.Value(), req.StartDate, req.EndDate, req.Page.Size + 1}
+	var (
+		query     = _accountEntriesQueryPrefix
+		totalArgs = 4
+		args      = []interface{}{req.Account.Value(), req.StartDate, req.EndDate, req.Page.Size + 1}
+	)
+
+	switch len(req.Filter.Companies) {
+	case 0:
+		break
+	case 1:
+		query += fmt.Sprintf(_accountEntriesCompanyFilter, totalArgs+1)
+		args = append(args, req.Filter.Companies[0])
+		totalArgs += 1
+	default:
+		query += fmt.Sprintf(_accountEntriesCompaniesFilter, totalArgs+1)
+		args = append(args, req.Filter.Companies)
+		totalArgs += 1
+	}
+
+	switch len(req.Filter.Events) {
+	case 0:
+		break
+	case 1:
+		query += fmt.Sprintf(_accountEntriesEventFilter, totalArgs+1)
+		args = append(args, req.Filter.Events[0])
+		totalArgs += 1
+	default:
+		query += fmt.Sprintf(_accountEntriesEventsFilter, totalArgs+1)
+		args = append(args, req.Filter.Events)
+		totalArgs += 1
+	}
+
+	if req.Filter.Operation != vos.InvalidOperation {
+		query += fmt.Sprintf(_accountEntriesOperationFilter, totalArgs+1)
+		args = append(args, req.Filter.Operation)
+		totalArgs += 1
+	}
 
 	if req.Page.Cursor != nil {
 		var cursor listAccountEntriesCursor
@@ -115,7 +170,7 @@ func generateListAccountEntriesQuery(req vos.AccountEntryRequest) (string, []int
 			return "", nil, err
 		}
 
-		query += _accountEntriesQueryPagination
+		query += fmt.Sprintf(_accountEntriesQueryPagination, totalArgs+1, totalArgs+2)
 		args = append(args, cursor.CompetenceDate, cursor.Version)
 	}
 	query += _accountEntriesQuerySuffix

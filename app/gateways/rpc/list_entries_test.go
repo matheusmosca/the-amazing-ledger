@@ -78,6 +78,30 @@ func TestAPI_ListAccountEntries_Success(t *testing.T) {
 				}, nil
 			},
 		},
+		{
+			name: "should succeed when listing account entries - with filters",
+			useCaseSetup: &mocks.UseCaseMock{
+				ListAccountEntriesFunc: func(_ context.Context, req vos.AccountEntryRequest) (vos.AccountEntryResponse, error) {
+					return vos.AccountEntryResponse{
+						Entries:  []vos.AccountEntry{},
+						NextPage: nil,
+					}, nil
+				},
+			},
+			request: &proto.ListAccountEntriesRequest{
+				Account:   "liability.credit_card.account1",
+				StartDate: timestamppb.Now(),
+				EndDate:   timestamppb.Now(),
+				Filter:    &proto.ListAccountEntriesRequest_Filter{Operation: proto.Operation_OPERATION_CREDIT},
+				Page:      nil,
+			},
+			want: func() (*proto.ListAccountEntriesResponse, error) {
+				return &proto.ListAccountEntriesResponse{
+					Entries:       []*proto.AccountEntry{},
+					NextPageToken: "",
+				}, nil
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -98,6 +122,7 @@ func TestAPI_ListAccountEntries_Success(t *testing.T) {
 				Account:   account,
 				StartDate: tt.request.StartDate.AsTime(),
 				EndDate:   tt.request.EndDate.AsTime(),
+				Filter:    vos.NewEntryFilter(tt.request.Filter),
 				Page:      page,
 			}, tt.useCaseSetup.ListAccountEntriesCalls()[0].AccountEntryRequest)
 		})

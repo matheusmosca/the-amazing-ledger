@@ -22,8 +22,8 @@ import (
 func TestE2E_RPC_ListAccountEntriesSuccess(t *testing.T) {
 	e1 := testutils.CreateEntry(t, vos.DebitOperation, "liability.clients.available.acc1", vos.NextAccountVersion, 100)
 	e2 := testutils.CreateEntry(t, vos.CreditOperation, "liability.clients.available.acc2", vos.NextAccountVersion, 100)
-	e3 := testutils.CreateEntry(t, vos.DebitOperation, "liability.clients.available.acc1", vos.NextAccountVersion, 100)
-	e4 := testutils.CreateEntry(t, vos.CreditOperation, "liability.clients.available.acc2", vos.NextAccountVersion, 100)
+	e3 := testutils.CreateEntry(t, vos.CreditOperation, "liability.clients.available.acc1", vos.NextAccountVersion, 100)
+	e4 := testutils.CreateEntry(t, vos.DebitOperation, "liability.clients.available.acc2", vos.NextAccountVersion, 100)
 
 	testCases := []struct {
 		name               string
@@ -117,6 +117,25 @@ func TestE2E_RPC_ListAccountEntriesSuccess(t *testing.T) {
 					Page: &proto.RequestPagination{
 						PageSize:  1,
 						PageToken: accountEntries.NextPageToken,
+					},
+				}
+			},
+			expectedNumEntries: 1,
+		},
+		{
+			name: "should return filtered entries",
+			seedRepo: func(t *testing.T) {
+				_ = testseed.CreateTransaction(t, e1, e2)
+				_ = testseed.CreateTransaction(t, e3, e4)
+			},
+			requestSetup: func(t *testing.T) *proto.ListAccountEntriesRequest {
+				return &proto.ListAccountEntriesRequest{
+					Account:   e1.Account.Value(),
+					StartDate: timestamppb.New(time.Now().Add(-1 * time.Minute)),
+					EndDate:   timestamppb.New(time.Now().Add(1 * time.Minute)),
+					Filter:    &proto.ListAccountEntriesRequest_Filter{Operation: proto.Operation_OPERATION_CREDIT},
+					Page: &proto.RequestPagination{
+						PageSize: 10,
 					},
 				}
 			},

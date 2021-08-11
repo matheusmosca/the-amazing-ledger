@@ -43,6 +43,7 @@ func (a *API) ListAccountEntries(ctx context.Context, request *proto.ListAccount
 		Account:   account,
 		StartDate: request.StartDate.AsTime(),
 		EndDate:   request.EndDate.AsTime(),
+		Filter:    vos.NewEntryFilter(request.Filter),
 		Page:      page,
 	}
 

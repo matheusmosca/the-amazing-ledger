@@ -3,9 +3,11 @@ package postgres
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stone-co/the-amazing-ledger/app"
@@ -35,7 +37,7 @@ func Test_generateListAccountEntriesQuery(t *testing.T) {
 		expectedErr   error
 	}{
 		{
-			name: "valid - without pagination",
+			name: "valid - no filters - no pagination",
 			req: func() vos.AccountEntryRequest {
 				return vos.AccountEntryRequest{
 					Account:   account,
@@ -52,7 +54,7 @@ func Test_generateListAccountEntriesQuery(t *testing.T) {
 			expectedErr:   nil,
 		},
 		{
-			name: "valid - with pagination",
+			name: "valid - no filters - with pagination",
 			req: func() vos.AccountEntryRequest {
 				cursor, _ := pagination.NewCursor(listAccountEntriesCursor{
 					CompetenceDate: end,
@@ -69,9 +71,159 @@ func Test_generateListAccountEntriesQuery(t *testing.T) {
 					},
 				}
 			},
-			expectedQuery: _accountEntriesQueryPrefix + _accountEntriesQueryPagination + _accountEntriesQuerySuffix,
-			expectedArgs:  []interface{}{account.Value(), start, end, size + 1, end, version.AsInt64()},
-			expectedErr:   nil,
+			expectedQuery: _accountEntriesQueryPrefix +
+				fmt.Sprintf(_accountEntriesQueryPagination, 5, 6) +
+				_accountEntriesQuerySuffix,
+			expectedArgs: []interface{}{account.Value(), start, end, size + 1, end, version.AsInt64()},
+			expectedErr:  nil,
+		},
+		{
+			name: "valid - with single company filter - no pagination",
+			req: func() vos.AccountEntryRequest {
+				filter := vos.AccountEntryFilter{Companies: []string{"company_1"}}
+
+				return vos.AccountEntryRequest{
+					Account:   account,
+					StartDate: start,
+					EndDate:   end,
+					Filter:    filter,
+					Page: pagination.Page{
+						Size:   size,
+						Cursor: nil,
+					},
+				}
+			},
+			expectedQuery: _accountEntriesQueryPrefix +
+				fmt.Sprintf(_accountEntriesCompanyFilter, 5) +
+				_accountEntriesQuerySuffix,
+			expectedArgs: []interface{}{account.Value(), start, end, size + 1, "company_1"},
+			expectedErr:  nil,
+		},
+		{
+			name: "valid - with multiple companies filter - no pagination",
+			req: func() vos.AccountEntryRequest {
+				filter := vos.AccountEntryFilter{Companies: []string{"company_1", "company_2"}}
+
+				return vos.AccountEntryRequest{
+					Account:   account,
+					StartDate: start,
+					EndDate:   end,
+					Filter:    filter,
+					Page: pagination.Page{
+						Size:   size,
+						Cursor: nil,
+					},
+				}
+			},
+			expectedQuery: _accountEntriesQueryPrefix +
+				fmt.Sprintf(_accountEntriesCompaniesFilter, 5) +
+				_accountEntriesQuerySuffix,
+			expectedArgs: []interface{}{account.Value(), start, end, size + 1, []string{"company_1", "company_2"}},
+			expectedErr:  nil,
+		},
+		{
+			name: "valid - with single event filter - no pagination",
+			req: func() vos.AccountEntryRequest {
+				filter := vos.AccountEntryFilter{Events: []int32{1}}
+
+				return vos.AccountEntryRequest{
+					Account:   account,
+					StartDate: start,
+					EndDate:   end,
+					Filter:    filter,
+					Page: pagination.Page{
+						Size:   size,
+						Cursor: nil,
+					},
+				}
+			},
+			expectedQuery: _accountEntriesQueryPrefix +
+				fmt.Sprintf(_accountEntriesEventFilter, 5) +
+				_accountEntriesQuerySuffix,
+			expectedArgs: []interface{}{account.Value(), start, end, size + 1, int32(1)},
+			expectedErr:  nil,
+		},
+		{
+			name: "valid - with multiple events filter - no pagination",
+			req: func() vos.AccountEntryRequest {
+				filter := vos.AccountEntryFilter{Events: []int32{1, 2}}
+
+				return vos.AccountEntryRequest{
+					Account:   account,
+					StartDate: start,
+					EndDate:   end,
+					Filter:    filter,
+					Page: pagination.Page{
+						Size:   size,
+						Cursor: nil,
+					},
+				}
+			},
+			expectedQuery: _accountEntriesQueryPrefix +
+				fmt.Sprintf(_accountEntriesEventsFilter, 5) +
+				_accountEntriesQuerySuffix,
+			expectedArgs: []interface{}{account.Value(), start, end, size + 1, []int32{1, 2}},
+			expectedErr:  nil,
+		},
+		{
+			name: "valid - with operation filter - no pagination",
+			req: func() vos.AccountEntryRequest {
+				filter := vos.AccountEntryFilter{Operation: vos.CreditOperation}
+
+				return vos.AccountEntryRequest{
+					Account:   account,
+					StartDate: start,
+					EndDate:   end,
+					Filter:    filter,
+					Page: pagination.Page{
+						Size:   size,
+						Cursor: nil,
+					},
+				}
+			},
+			expectedQuery: _accountEntriesQueryPrefix +
+				fmt.Sprintf(_accountEntriesOperationFilter, 5) +
+				_accountEntriesQuerySuffix,
+			expectedArgs: []interface{}{account.Value(), start, end, size + 1, vos.CreditOperation},
+			expectedErr:  nil,
+		},
+		{
+			name: "valid - all filters - with pagination",
+			req: func() vos.AccountEntryRequest {
+				filter := vos.AccountEntryFilter{
+					Companies: []string{"company_1", "company_2"},
+					Events:    []int32{1},
+					Operation: vos.CreditOperation,
+				}
+
+				cursor, _ := pagination.NewCursor(listAccountEntriesCursor{
+					CompetenceDate: end,
+					Version:        1,
+				})
+
+				return vos.AccountEntryRequest{
+					Account:   account,
+					StartDate: start,
+					EndDate:   end,
+					Filter:    filter,
+					Page: pagination.Page{
+						Size:   size,
+						Cursor: cursor,
+					},
+				}
+			},
+			expectedQuery: _accountEntriesQueryPrefix +
+				fmt.Sprintf(_accountEntriesCompaniesFilter, 5) +
+				fmt.Sprintf(_accountEntriesEventFilter, 6) +
+				fmt.Sprintf(_accountEntriesOperationFilter, 7) +
+				fmt.Sprintf(_accountEntriesQueryPagination, 8, 9) +
+				_accountEntriesQuerySuffix,
+			expectedArgs: []interface{}{
+				account.Value(), start, end, size + 1,
+				[]string{"company_1", "company_2"}, int32(1), vos.CreditOperation,
+				end, version.AsInt64(),
+			},
+			expectedErr: nil,
 		},
 		{
 			name: "invalid page	token",
@@ -91,6 +243,26 @@ func Test_generateListAccountEntriesQuery(t *testing.T) {
 			expectedQuery: "",
 			expectedArgs:  nil,
 			expectedErr:   app.ErrInvalidPageCursor,
+		},
+		{
+			name: "invalid operation filter",
+			req: func() vos.AccountEntryRequest {
+				filter := vos.AccountEntryFilter{Operation: vos.InvalidOperation}
+
+				return vos.AccountEntryRequest{
+					Account:   account,
+					StartDate: start,
+					EndDate:   end,
+					Filter:    filter,
+					Page: pagination.Page{
+						Size:   size,
+						Cursor: nil,
+					},
+				}
+			},
+			expectedQuery: _accountEntriesQueryPrefix + _accountEntriesQuerySuffix,
+			expectedArgs:  []interface{}{account.Value(), start, end, size + 1},
+			expectedErr:   nil,
 		},
 	}
 	for _, tt := range testCases {
@@ -260,6 +432,253 @@ func TestLedgerRepository_ListAccountEntries(t *testing.T) {
 					Page: pagination.Page{
 						Size:   1,
 						Cursor: cur,
+					},
+				}
+			},
+			want: func(t *testing.T, txs []entities.Transaction) w {
+				entries := accountEntriesFromTransaction(t, txs[0], account1)
+
+				return w{
+					entries: entries,
+					cursor:  nil,
+				}
+			},
+		},
+		{
+			name: "return filtered by single company",
+			seedRepo: func(t *testing.T, ctx context.Context, r *LedgerRepository) []entities.Transaction {
+				e1 := createEntry(t, vos.DebitOperation, account1, vos.Version(1), amount)
+				e2 := createEntry(t, vos.CreditOperation, account2, vos.IgnoreAccountVersion, amount)
+
+				tx1, err := entities.NewTransaction(
+					uuid.New(),
+					uint32(1),
+					"company_1",
+					time.Now().Round(time.Microsecond),
+					e1, e2,
+				)
+				assert.NoError(t, err)
+
+				err = r.CreateTransaction(ctx, tx1)
+				assert.NoError(t, err)
+
+				e1 = createEntry(t, vos.DebitOperation, account1, vos.Version(2), amount)
+				e2 = createEntry(t, vos.CreditOperation, account2, vos.IgnoreAccountVersion, amount)
+
+				tx2 := createTransaction(t, ctx, r, e1, e2)
+
+				return []entities.Transaction{tx1, tx2}
+			},
+			setupRequest: func(t *testing.T, _ []entities.Transaction) vos.AccountEntryRequest {
+				account, err := vos.NewAnalyticAccount(account1)
+				assert.NoError(t, err)
+
+				now := time.Now()
+
+				return vos.AccountEntryRequest{
+					Account:   account,
+					StartDate: now.Add(-10 * time.Second),
+					EndDate:   now.Add(10 * time.Second),
+					Filter:    vos.AccountEntryFilter{Companies: []string{"company_1"}},
+					Page: pagination.Page{
+						Size:   10,
+						Cursor: nil,
+					},
+				}
+			},
+			want: func(t *testing.T, txs []entities.Transaction) w {
+				entries := accountEntriesFromTransaction(t, txs[0], account1)
+
+				return w{
+					entries: entries,
+					cursor:  nil,
+				}
+			},
+		},
+		{
+			name: "return filtered by multiple companies",
+			seedRepo: func(t *testing.T, ctx context.Context, r *LedgerRepository) []entities.Transaction {
+				e1 := createEntry(t, vos.DebitOperation, account1, vos.Version(1), amount)
+				e2 := createEntry(t, vos.CreditOperation, account2, vos.IgnoreAccountVersion, amount)
+
+				tx1, err := entities.NewTransaction(
+					uuid.New(),
+					uint32(1),
+					"company_1",
+					time.Now().Round(time.Microsecond),
+					e1, e2,
+				)
+				assert.NoError(t, err)
+
+				err = r.CreateTransaction(ctx, tx1)
+				assert.NoError(t, err)
+
+				e1 = createEntry(t, vos.DebitOperation, account1, vos.Version(2), amount)
+				e2 = createEntry(t, vos.CreditOperation, account2, vos.IgnoreAccountVersion, amount)
+
+				tx2 := createTransaction(t, ctx, r, e1, e2)
+
+				return []entities.Transaction{tx1, tx2}
+			},
+			setupRequest: func(t *testing.T, _ []entities.Transaction) vos.AccountEntryRequest {
+				account, err := vos.NewAnalyticAccount(account1)
+				assert.NoError(t, err)
+
+				now := time.Now()
+
+				return vos.AccountEntryRequest{
+					Account:   account,
+					StartDate: now.Add(-10 * time.Second),
+					EndDate:   now.Add(10 * time.Second),
+					Filter:    vos.AccountEntryFilter{Companies: []string{"company_1", "abc"}},
+					Page: pagination.Page{
+						Size:   10,
+						Cursor: nil,
+					},
+				}
+			},
+			want: func(t *testing.T, txs []entities.Transaction) w {
+				entries := accountEntriesFromTransaction(t, txs[1], account1)
+				entries = append(entries, accountEntriesFromTransaction(t, txs[0], account1)...)
+
+				return w{
+					entries: entries,
+					cursor:  nil,
+				}
+			},
+		},
+		{
+			name: "return filtered by single event",
+			seedRepo: func(t *testing.T, ctx context.Context, r *LedgerRepository) []entities.Transaction {
+				e1 := createEntry(t, vos.DebitOperation, account1, vos.Version(1), amount)
+				e2 := createEntry(t, vos.CreditOperation, account2, vos.IgnoreAccountVersion, amount)
+
+				tx1, err := entities.NewTransaction(
+					uuid.New(),
+					uint32(2),
+					"abc",
+					time.Now().Round(time.Microsecond),
+					e1, e2,
+				)
+				assert.NoError(t, err)
+
+				err = r.CreateTransaction(ctx, tx1)
+				assert.NoError(t, err)
+
+				e1 = createEntry(t, vos.DebitOperation, account1, vos.Version(2), amount)
+				e2 = createEntry(t, vos.CreditOperation, account2, vos.IgnoreAccountVersion, amount)
+
+				tx2 := createTransaction(t, ctx, r, e1, e2)
+
+				return []entities.Transaction{tx1, tx2}
+			},
+			setupRequest: func(t *testing.T, _ []entities.Transaction) vos.AccountEntryRequest {
+				account, err := vos.NewAnalyticAccount(account1)
+				assert.NoError(t, err)
+
+				now := time.Now()
+
+				return vos.AccountEntryRequest{
+					Account:   account,
+					StartDate: now.Add(-10 * time.Second),
+					EndDate:   now.Add(10 * time.Second),
+					Filter:    vos.AccountEntryFilter{Events: []int32{2}},
+					Page: pagination.Page{
+						Size:   10,
+						Cursor: nil,
+					},
+				}
+			},
+			want: func(t *testing.T, txs []entities.Transaction) w {
+				entries := accountEntriesFromTransaction(t, txs[0], account1)
+
+				return w{
+					entries: entries,
+					cursor:  nil,
+				}
+			},
+		},
+		{
+			name: "return filtered by multiple companies",
+			seedRepo: func(t *testing.T, ctx context.Context, r *LedgerRepository) []entities.Transaction {
+				e1 := createEntry(t, vos.DebitOperation, account1, vos.Version(1), amount)
+				e2 := createEntry(t, vos.CreditOperation, account2, vos.IgnoreAccountVersion, amount)
+
+				tx1, err := entities.NewTransaction(
+					uuid.New(),
+					uint32(2),
+					"abc",
+					time.Now().Round(time.Microsecond),
+					e1, e2,
+				)
+				assert.NoError(t, err)
+
+				err = r.CreateTransaction(ctx, tx1)
+				assert.NoError(t, err)
+
+				e1 = createEntry(t, vos.DebitOperation, account1, vos.Version(2), amount)
+				e2 = createEntry(t, vos.CreditOperation, account2, vos.IgnoreAccountVersion, amount)
+
+				tx2 := createTransaction(t, ctx, r, e1, e2)
+
+				return []entities.Transaction{tx1, tx2}
+			},
+			setupRequest: func(t *testing.T, _ []entities.Transaction) vos.AccountEntryRequest {
+				account, err := vos.NewAnalyticAccount(account1)
+				assert.NoError(t, err)
+
+				now := time.Now()
+
+				return vos.AccountEntryRequest{
+					Account:   account,
+					StartDate: now.Add(-10 * time.Second),
+					EndDate:   now.Add(10 * time.Second),
+					Filter:    vos.AccountEntryFilter{Events: []int32{1, 2}},
+					Page: pagination.Page{
+						Size:   10,
+						Cursor: nil,
+					},
+				}
+			},
+			want: func(t *testing.T, txs []entities.Transaction) w {
+				entries := accountEntriesFromTransaction(t, txs[1], account1)
+				entries = append(entries, accountEntriesFromTransaction(t, txs[0], account1)...)
+
+				return w{
+					entries: entries,
+					cursor:  nil,
+				}
+			},
+		},
+		{
+			name: "return filtered by operation",
+			seedRepo: func(t *testing.T, ctx context.Context, r *LedgerRepository) []entities.Transaction {
+				e1 := createEntry(t, vos.DebitOperation, account1, vos.Version(1), amount)
+				e2 := createEntry(t, vos.CreditOperation, account2, vos.IgnoreAccountVersion, amount)
+
+				tx1 := createTransaction(t, ctx, r, e1, e2)
+
+				e1 = createEntry(t, vos.CreditOperation, account1, vos.Version(2), amount)
+				e2 = createEntry(t, vos.DebitOperation, account2, vos.IgnoreAccountVersion, amount)
+
+				tx2 := createTransaction(t, ctx, r, e1, e2)
+
+				return []entities.Transaction{tx1, tx2}
+			},
+			setupRequest: func(t *testing.T, _ []entities.Transaction) vos.AccountEntryRequest {
+				account, err := vos.NewAnalyticAccount(account1)
+				assert.NoError(t, err)
+
+				now := time.Now()
+
+				return vos.AccountEntryRequest{
+					Account:   account,
+					StartDate: now.Add(-10 * time.Second),
+					EndDate:   now.Add(10 * time.Second),
+					Filter:    vos.AccountEntryFilter{Operation: vos.DebitOperation},
+					Page: pagination.Page{
+						Size:   10,
+						Cursor: nil,
 					},
 				}
 			},

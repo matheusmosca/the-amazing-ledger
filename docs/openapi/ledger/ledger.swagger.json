@@ -92,6 +92,42 @@
             "format": "date-time"
           },
           {
+            "name": "filter.companies",
+            "description": "Companies.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "filter.events",
+            "description": "Events.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "filter.operation",
+            "description": "Operation.\n\n - OPERATION_UNSPECIFIED: Don't use. It's just the default value.\n - OPERATION_CREDIT: Credit operation.\n - OPERATION_DEBIT: Debit operation.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "OPERATION_UNSPECIFIED",
+              "OPERATION_CREDIT",
+              "OPERATION_DEBIT"
+            ],
+            "default": "OPERATION_UNSPECIFIED"
+          },
+          {
             "name": "page.pageSize",
             "description": "Max of 50, defaults to 10.",
             "in": "query",
@@ -235,6 +271,30 @@
       "default": "SERVING_STATUS_UNKNOWN_UNSPECIFIED",
       "description": "- SERVING_STATUS_UNKNOWN_UNSPECIFIED: Don't use. It's just the default value.\n - SERVING_STATUS_SERVING: Healthy\n - SERVING_STATUS_NOT_SERVING: Unhealthy\n - SERVING_STATUS_SERVICE_UNKNOWN: Used only when streaming",
       "title": "ServingStatus is the enum of the possible health check status"
+    },
+    "ListAccountEntriesRequestFilter": {
+      "type": "object",
+      "properties": {
+        "companies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Companies"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": "Events"
+        },
+        "operation": {
+          "$ref": "#/definitions/ledgerOperation",
+          "title": "Operation"
+        }
+      }
     },
     "ledgerAccountEntry": {
       "type": "object",
