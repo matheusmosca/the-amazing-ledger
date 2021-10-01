@@ -86,6 +86,25 @@ func TestLedgerRepository_CreateTransactionSuccess(t *testing.T) {
 			expectedEntryVersion:   vos.Version(2),
 			expectedAccountVersion: vos.Version(2),
 		},
+		{
+			name: "insert transaction successfully with existing versions - unsorted and manual version",
+			repoSeed: func(t *testing.T, ctx context.Context, r *LedgerRepository) {
+				e1 := createEntry(t, vos.DebitOperation, "liability.abc.account1", vos.NextAccountVersion, 100)
+				e2 := createEntry(t, vos.CreditOperation, "liability.abc.account2", vos.IgnoreAccountVersion, 100)
+
+				createTransaction(t, ctx, r, e1, e2)
+			},
+			entriesSetup: func(t *testing.T) []entities.Entry {
+				e1 := createEntry(t, vos.DebitOperation, "liability.abc.account1", vos.Version(2), 40)
+				e2 := createEntry(t, vos.CreditOperation, "liability.abc.account2", vos.IgnoreAccountVersion, 100)
+				e3 := createEntry(t, vos.DebitOperation, "liability.abc.account1", vos.Version(4), 40)
+				e4 := createEntry(t, vos.DebitOperation, "liability.abc.account1", vos.Version(3), 20)
+
+				return []entities.Entry{e1, e2, e3, e4}
+			},
+			expectedEntryVersion:   vos.Version(2),
+			expectedAccountVersion: vos.Version(4),
+		},
 	}
 
 	for _, tt := range testCases {

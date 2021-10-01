@@ -28,6 +28,12 @@ func TestNewTransaction(t *testing.T) {
 	e23, _ := NewEntry(uuid.New(), vos.CreditOperation, "liability.clients.available.555", vos.NextAccountVersion, 100, metadata)
 	validThreeEntries := []Entry{e21, e22, e23}
 
+	e31, _ := NewEntry(uuid.New(), vos.DebitOperation, "liability.clients.available.333", vos.NextAccountVersion, 100, metadata)
+	e32, _ := NewEntry(uuid.New(), vos.DebitOperation, "liability.clients.available.333", vos.Version(2), 200, metadata)
+	e33, _ := NewEntry(uuid.New(), vos.DebitOperation, "liability.clients.available.333", vos.Version(3), 300, metadata)
+	e34, _ := NewEntry(uuid.New(), vos.CreditOperation, "liability.clients.available.444", vos.Version(4), 600, metadata)
+	validFourEntries := []Entry{e31, e32, e33, e34}
+
 	testCases := []struct {
 		name                string
 		id                  uuid.UUID
@@ -95,6 +101,19 @@ func TestNewTransaction(t *testing.T) {
 			expectedTransaction: Transaction{
 				ID:             id,
 				Entries:        validThreeEntries,
+				Event:          event,
+				Company:        company,
+				CompetenceDate: competenceDate,
+			},
+			expectedErr: nil,
+		},
+		{
+			name:    "Valid transaction with 4 entries - unordered entries by version",
+			id:      id,
+			entries: []Entry{e33, e34, e32, e31},
+			expectedTransaction: Transaction{
+				ID:             id,
+				Entries:        validFourEntries,
 				Event:          event,
 				Company:        company,
 				CompetenceDate: competenceDate,
