@@ -1,6 +1,6 @@
-// +build tools
+//go:build tools
 
-package tools
+package main
 
 import (
 	// Architecture linter
