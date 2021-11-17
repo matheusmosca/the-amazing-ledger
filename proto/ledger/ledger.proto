@@ -1,36 +1,18 @@
 syntax = "proto3";
 
-option go_package = "github.com/stone-co/the-amazing-ledger/proto/ledger";
+option go_package = "github.com/stone-co/the-amazing-ledger/gen/ledger";
 
 package ledger;
 
-import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
 
 service LedgerService {
-  rpc CreateTransaction(CreateTransactionRequest) returns (google.protobuf.Empty){
-    option (google.api.http) = {
-      post: "/api/v1/transactions"
-      body: "*"
-    };
-  };
-  rpc GetAccountBalance(GetAccountBalanceRequest) returns (GetAccountBalanceResponse){
-    option (google.api.http) = {
-      get: "/api/v1/accounts/{account}/balance"
-    };
-  };
-  rpc ListAccountEntries(ListAccountEntriesRequest) returns (ListAccountEntriesResponse){
-    option (google.api.http) = {
-      get: "/api/v1/accounts/{account}/history"
-    };
-  };
-  rpc GetSyntheticReport(GetSyntheticReportRequest) returns (GetSyntheticReportResponse){
-    option (google.api.http) = {
-      get: "/api/v1/reports/{account}/{filters.level}/{start_date}/{end_date}/synthetic"
-    };
-  };
+  rpc CreateTransaction(CreateTransactionRequest) returns (google.protobuf.Empty);
+  rpc GetAccountBalance(GetAccountBalanceRequest) returns (GetAccountBalanceResponse);
+  rpc ListAccountEntries(ListAccountEntriesRequest) returns (ListAccountEntriesResponse);
+  rpc GetSyntheticReport(GetSyntheticReportRequest) returns (GetSyntheticReportResponse);
 }
 
 // CreateTransactionRequest represents a transaction to be saved. A transaction must
@@ -207,9 +189,5 @@ message HealthCheckResponse {
 // Health Check service.
 service Health {
   // Check - checks the system health.
-  rpc Check(google.protobuf.Empty) returns (HealthCheckResponse){
-    option (google.api.http) = {
-      get: "/health"
-    };
-  };
+  rpc Check(google.protobuf.Empty) returns (HealthCheckResponse);
 }

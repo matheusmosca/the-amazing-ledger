@@ -1,0 +1,20 @@
+type: google.api.Service
+config_version: 3
+
+http:
+  rules:
+    - selector: ledger.LedgerService.CreateTransaction
+      post: /api/v1/transactions
+      body: "*"
+
+    - selector: ledger.LedgerService.GetAccountBalance
+      get: /api/v1/accounts/{account}/balance
+
+    - selector: ledger.LedgerService.ListAccountEntries
+      get: /api/v1/accounts/{account}/history
+
+    - selector: ledger.LedgerService.GetSyntheticReport
+      get: /api/v1/reports/{account}/{filters.level}/{start_date}/{end_date}/synthetic
+
+    - selector: ledger.Health.Check
+      get: /health

@@ -4,15 +4,21 @@ plugins:
     out: gen
     opt:
       - paths=source_relative
+
   - name: go-grpc
     out: gen
     opt:
       - paths=source_relative
       - require_unimplemented_servers=false
+
   - name: grpc-gateway
     out: gen
     opt:
       - paths=source_relative
       - logtostderr=true
+      - grpc_api_configuration=proto/ledger/ledger.yaml
+
   - name: openapiv2
     out: docs/openapi
+    opt:
+      - grpc_api_configuration=proto/ledger/ledger.yaml
